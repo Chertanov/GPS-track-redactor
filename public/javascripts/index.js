@@ -205,7 +205,8 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
                 var trkpt = trkptElements[i];
                 var lat = trkpt.getAttribute('lat');
                 var lon = trkpt.getAttribute('lon');
-                Points_file.push([Number(lon),Number(lat)]);
+                var ele = trkpt.querySelector('ele').textContent;
+                Points_file.push([Number(lon),Number(lat),Number(ele)]);
                 //console.log([Number(lon),Number(lat)]);
                 //console.log('Latitude:', lat, 'Longitude:', lon);
                 // You can process each trkpt element here
@@ -232,7 +233,6 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
         //displayPoints();
         readingInProgress = false;
         processQueue();
-        //download(xmlDoc);
     };
 
 
