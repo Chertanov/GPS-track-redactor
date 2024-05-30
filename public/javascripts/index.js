@@ -218,10 +218,11 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
                 var coordText = coordinates[i].textContent.trim();
                 var coordPairs = coordText.split(/\s+/);
                 for (var j = 0; j < coordPairs.length; j++) {
-                    var parts = coordPairs[j].split(',');
+                    var parts = coordPairs[j].split(',');//<----------need to change elevation for KML as well
                     var lon = parseFloat(parts[0]);
                     var lat = parseFloat(parts[1]);
-                    Points_file.push([Number(lon),Number(lat)]);
+                    var ele = parseFloat(parts[2]);
+                    Points_file.push([Number(lon),Number(lat),Number(ele)]);
                     //console.log('Latitude:', lat, 'Longitude:', lon);
                     // You can process each coordinate here
                 }
@@ -230,6 +231,7 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
             console.error('Unsupported file type');
         }
         Points.push(Points_file);
+        console.log(Points_file);
         //displayPoints();
         readingInProgress = false;
         processQueue();
@@ -313,21 +315,26 @@ function reloadPath(points_index){
 }
 
 
-function markersToGeoJSON(markers) {
-    const geojson = {
+function pointsToGeoJSON(points_list) { //need to be changed to make proper GeoJson
+    const geojson = [{
       type: "FeatureCollection",
-      features: markers.map(marker => {
-        const latlng = marker.getLatLng();
+      features: points_list.map(points => {
+        //const latlng = marker.getLatLng();
         return {
           type: "Feature",
           geometry: {
-            type: "Point",
-            coordinates: [latlng.lng, latlng.lat]
+            type: "LineString",
+            coordinates: points.map(point => {return point})
           },
-          properties: {} // You can add more properties here if needed
+          properties: {"attributeType": "3"}
         };
-      })
-    };
+      }),
+      properties: {
+                "Creator": "OpenRouteService.org",
+                "records": 1,
+                "summary": "steepness"
+            }
+    }];
   
     return geojson;
 }
@@ -418,7 +425,7 @@ function displayPoints()
     for (let j = 0; j< Points.length; j++){
         //console.log("j array:")
         //console.log(Points[j]);
-        console.log(j);
+        //console.log(j);
         Markers.push([]);
         for (let i = 0; i < Points[j].length; i++)
         {
@@ -437,53 +444,50 @@ function displayPoints()
         // let geojson_markers = markersToGeoJSON(Markers[0]);
 
 
-        // const geojson2 = [{
-        //     "type": "FeatureCollection",
-        //     "features": [{
-        //         "type": "Feature",
-        //         "geometry": {
-        //             "type": "LineString",
-        //             "coordinates": [
-        //                 [8.6865264, 49.3859188, 114.5],
-        //                 [8.6864108, 49.3868472, 114.3],
-        //                 [8.6860538, 49.3903808, 114.8]
-        //             ]
-        //         },
-        //         "properties": {
-        //             "attributeType": "3"
-        //         }
-        //     }, {
-        //         "type": "Feature",
-        //         "geometry": {
-        //             "type": "LineString",
-        //             "coordinates": [
-        //                 [8.6860538, 49.3903808, 114.8],
-        //                 [8.6857921, 49.3936309, 114.4],
-        //                 [8.6860124, 49.3936431, 114.3]
-        //             ]
-        //         },
-        //         "properties": {
-        //             "attributeType": "0"
-        //         }
-        //     }],
-        //     "properties": {
-        //         "Creator": "OpenRouteService.org",
-        //         "records": 2,
-        //         "summary": "steepness"
-        //     }
-        // }]
+        const geojson2 = [{
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        [8.6865264, 49.3859188, 114.5],
+                        [8.6864108, 49.3868472, 114.3],
+                        [8.6860538, 49.3903808, 114.8]
+                    ]
+                },
+                "properties": {
+                    "attributeType": "3"
+                }
+            }, {
+                "type": "Feature",
+                "geometry": {
+                    "type": "LineString",
+                    "coordinates": [
+                        [8.6860538, 49.3903808, 114.8],
+                        [8.6857921, 49.3936309, 114.4],
+                        [8.6860124, 49.3936431, 114.3]
+                    ]
+                },
+                "properties": {
+                    "attributeType": "0"
+                }
+            }],
+            "properties": {
+                "Creator": "OpenRouteService.org",
+                "records": 2,
+                "summary": "steepness"
+            }
+        }]
 
-
-    //     console.log(geojson_markers);
-    //     console.log("testing1");
-    //     let hg = L.control.heightgraph();
-    //     console.log("testing2");
-    //     hg.addTo(myMap);
-    //     console.log("testing3");
-    //     //hg.addData(geojson_markers);
+        geojson_points1 = pointsToGeoJSON(Points);
+        console.log(geojson2);
+        console.log(geojson_points1);
+        let hg = L.control.heightgraph();
+        hg.addTo(myMap);
+        hg.addData(geojson_points1);
     //     hg.addData(geojson2);
-    //     console.log("testing4");
-    //    // L.geoJson(geojson_markers).addTo(map);
+    //     L.geoJson(geojson_markers).addTo(map);
 
         reloadPath(j);
         // let path = turf.lineString(Points[j]);
@@ -539,152 +543,5 @@ function download(index)
 
     
 }
-///////////////////////////////////////////////////////////////////////////////////////////////
 
-anychart.onDocumentReady(function () {
-  
-    // add data
-    var data = [
-      ["2003", 1, 0, 0],
-      ["2004", 4, 0, 0],
-      ["2005", 6, 0, 0],
-      ["2006", 9, 1, 0],
-      ["2007", 12, 2, 0],
-      ["2008", 13, 5, 1],
-      ["2009", 15, 6, 1],
-      ["2010", 16, 9, 1],
-      ["2011", 16, 10, 4],
-      ["2012", 17, 11, 5],
-      ["2013", 17, 13, 6],
-      ["2014", 17, 14, 7],
-      ["2015", 17, 14, 10],
-      ["2016", 17, 14, 12],
-      ["2017", 19, 16, 12],
-      ["2018", 20, 17, 14],
-      ["2019", 20, 19, 16],
-      ["2020", 20, 20, 17],
-      ["2021", 20, 20, 20],
-      ["2022", 20, 22, 20]
-    ];
-
-    // create a data set
-    var dataSet = anychart.data.set(data);
-
-    // map the data for all series
-    var firstSeriesData = dataSet.mapAs({x: 0, value: 1});
-    var secondSeriesData = dataSet.mapAs({x: 0, value: 2});
-    var thirdSeriesData = dataSet.mapAs({x: 0, value: 3});
-
-    // create a line chart
-    var chart = anychart.line();
-
-    // create the series and name them
-    var firstSeries = chart.line(firstSeriesData);
-    firstSeries.name("Roger Federer");
-    var secondSeries = chart.line(secondSeriesData);
-    secondSeries.name("Rafael Nadal");
-    var thirdSeries = chart.line(thirdSeriesData);
-    thirdSeries.name("Novak Djokovic");
-
-    // add a legend
-    chart.legend().enabled(true);
-
-    // add a title
-    chart.title("Big Three's Grand Slam Title Race");
-
-    // specify where to display the chart
-    chart.container("height_line");
-
-    // draw the resulting chart
-    chart.draw();
-
-  });
-
-
-
-
-/////////////////////////////////////////////////////////
-// let path_Test = turf.lineString(Points[points_index]);
-// let pathLayer_Test = L.geoJSON(path);
-// let hg = L.control.heightgraph();
-// hg.addTo(map);
-// hg.addData(pathLayer_Test);
-// L.geoJson(pathLayer_Test).addTo(map);
-
-var graph;
-var xPadding = 30;
-var yPadding = 30;
- 
-var data = { values:[
-        { X: "Jan", Y: 12 },
-        { X: "Feb", Y: 28 },
-        { X: "Mar", Y: 18 },
-        { X: "Apr", Y: 34 },
-        { X: "May", Y: 40 },
-]};
-
-function getMaxY() {
-    var max = 0;
-     
-    for(var i = 0; i < data.values.length; i ++) {
-        if(data.values[i].Y > max) {
-            max = data.values[i].Y;
-        }
-    }
-     
-    max += 10 - max % 10;
-    return max;
-}
- 
-function getXPixel(val) {
-    return ((graph.width() - xPadding) / data.values.length) * val + (xPadding * 1.5);
-}
- 
-function getYPixel(val) {
-    return graph.height() - (((graph.height() - yPadding) / getMaxY()) * val) - yPadding;
-}
-
-$(document).ready(function() {
-    graph = $('#graph');
-    var c = graph[0].getContext('2d');
-
-    c.lineWidth = 2;
-    c.strokeStyle = '#333';
-    c.font = 'italic 8pt sans-serif';
-    c.textAlign = "center";
-
-    c.beginPath();
-    c.moveTo(xPadding, 0);
-    c.lineTo(xPadding, graph.height() - yPadding);
-    c.lineTo(graph.width(), graph.height() - yPadding);
-    c.stroke();
-
-    for(var i = 0; i < data.values.length; i ++) {
-        c.fillText(data.values[i].X, getXPixel(i), graph.height() - yPadding + 20);
-    }
-
-    c.textAlign = "right"
-    c.textBaseline = "middle";
-    
-    for(var i = 0; i < getMaxY(); i += 10) {
-        c.fillText(i, xPadding - 10, getYPixel(i));
-    }
-
-    c.strokeStyle = '#f00';
-    c.beginPath();
-    c.moveTo(getXPixel(0), getYPixel(data.values[0].Y));
-    
-    for(var i = 1; i < data.values.length; i ++) {
-        c.lineTo(getXPixel(i), getYPixel(data.values[i].Y));
-    }
-    c.stroke();
-
-    c.fillStyle = '#333';
-    
-    for(var i = 0; i < data.values.length; i ++) { 
-        c.beginPath();
-        c.arc(getXPixel(i), getYPixel(data.values[i].Y), 4, 0, Math.PI * 2, true);
-        c.fill();
-    }
-});
 
