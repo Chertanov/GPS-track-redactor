@@ -30,18 +30,35 @@
 
     <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.6.1.min.js"></script>
+
+
+    <script src="https://kit.fontawesome.com/33cfd31e1b.js" crossorigin="anonymous"></script>
+
+    <script src="
+    https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.js
+    "></script>
+    <link href="
+    https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.css
+    " rel="stylesheet">
     <title>Document</title>
 </head>
 <body>
     <input type="file" accept=".gpx,.kml" name="map_file" multiple="multiple">
-    <div>
-        <button onclick="moveMarker()">Move marker</button>
-        <button onclick="deleteMarker()">Delete marker</button>
-        <button onclick="createMarker()">Create Marker</button>
-        <button onclick="getCurrentPosition()">Get Position</button>
-    </div>
+    
 
-    <div id="map"></div>
+    <div id="map">
+
+        <div >
+            <button onclick="moveMarker()">Move marker</button>
+            <button onclick="deleteMarker()">Delete marker</button>
+            <button onclick="createMarker()">Create Marker</button>
+            
+    
+    
+            <button onclick="getCurrentPosition()" class="leaflet-bar-part leaflet-bar-part-single" title="Show my position"><span class="fas fa-crosshairs"></span></button>
+        </div>
+
+    </div>
     <div >
         <button onclick="clearMap()">Delete</button>
     </div>

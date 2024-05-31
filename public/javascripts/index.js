@@ -89,9 +89,71 @@ let baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/
     }).addTo(myMap);
 baseLayer.myId = "Base";
 
+let zoomControls = L.control.zoom({
+    position: "topright",
+});
+zoomControls.addTo(myMap);
+
+let locateControl = L.control.locate({
+    position: 'topright',  // Position of the locate control
+    setView: 'once',       // Automatically sets the map view (options: 'once', 'always', false)
+    keepCurrentZoomLevel: true,
+    strings: {
+        title: "Show current position",  // Title of the locate button
+
+    }
+});
+locateControl.addTo(myMap);
+
+
+let locateControlElements = document.getElementsByClassName("leaflet-control-locate-location-arrow");
+;
+for (var i = 0; i < locateControlElements.length; i++) {
+    locateControlElements[i].classList.add("fas");
+    locateControlElements[i].classList.add("fa-crosshairs");
+    locateControlElements[i].classList.remove("leaflet-control-locate-location-arrow");
+}
+
+let rightTopPanel = document.getElementsByClassName("leaflet-top leaflet-right")[0];
 
 
 
+
+let moveMarkerElement = document.createElement("button");
+let deleteMarkerElement = document.createElement("button");
+let createMarkerElement = document.createElement("button");
+moveMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
+deleteMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
+createMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
+
+moveMarkerElement.addEventListener("click",moveMarker);
+deleteMarkerElement.addEventListener("click",deleteMarker);
+createMarkerElement.addEventListener("click",createMarker);
+moveMarkerElement.textContent = "Move marker";
+deleteMarkerElement.textContent = "Delete marker";
+createMarkerElement.textContent = "Create Marker";
+
+const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement];
+
+
+
+
+let divBarElement = document.createElement("div");
+divBarElement.className = "leaflet-bar leaflet-control";
+
+let divBarElementsList = [divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
+
+for (var i = 0; i < divBarElementsList.length; i++) {
+    //divBarElementsList[i].id = "divId" + i;
+    divBarElementsList[i].appendChild(buttonsList[i]);
+    rightTopPanel.appendChild( divBarElementsList[i]);
+}
+
+divBarElementsList = [];
+console.log(divBarElementsList)
+
+
+//appendChild(deleteMarker).appendChild(createMarker);
 // $(document).ready(function(){
 //     $('input[name="map_file"]').change(function(input){
 //         var file = input.target.files[0];
