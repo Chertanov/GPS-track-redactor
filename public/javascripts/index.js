@@ -18,9 +18,18 @@ var xmlDoc_list = [];
 //var currentPositionhandle = window.navigator;
 var currentPosition = [];
 var debug_info_handle = document.getElementById("debug_info");
-debug_info_handle.textContent= "NotOK";
-//debug_info_handle.innerHTML= "NOtOK";
-console.log(location.port);
+
+
+
+document.querySelector('.scrollable-list').addEventListener('wheel', function(event) {
+    if (event.deltaY !== 0) {
+        event.currentTarget.scrollBy({
+            top: event.deltaY,
+            behavior: 'smooth'
+        });
+        event.preventDefault();
+    }
+});
 
 // function setCurrentPosition(success){
 //     currentPosition = [success.coords.latitude, success.coords.longitude]
@@ -94,6 +103,8 @@ let zoomControls = L.control.zoom({
 });
 zoomControls.addTo(myMap);
 
+
+
 let locateControl = L.control.locate({
     position: 'topright',  // Position of the locate control
     setView: 'once',       // Automatically sets the map view (options: 'once', 'always', false)
@@ -117,23 +128,45 @@ for (var i = 0; i < locateControlElements.length; i++) {
 let rightTopPanel = document.getElementsByClassName("leaflet-top leaflet-right")[0];
 
 
+let markerIcon = document.createElement("span");
+markerIcon.className = "fas fa-map-marker-alt";
+let changeIcon = document.createElement("span");
+changeIcon.className = "fas fa-exchange-alt";
+let deleteIcon = document.createElement("span");
+deleteIcon.className = "fas fa-trash";
+let uploadIcon = document.createElement("span");
+uploadIcon.className = "fas fa-upload";
+
 
 
 let moveMarkerElement = document.createElement("button");
 let deleteMarkerElement = document.createElement("button");
 let createMarkerElement = document.createElement("button");
+let inputFileElement = document.createElement("button");
 moveMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 deleteMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 createMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
-
+inputFileElement.className = "leaflet-bar-part leaflet-bar-part-single";
 moveMarkerElement.addEventListener("click",moveMarker);
 deleteMarkerElement.addEventListener("click",deleteMarker);
 createMarkerElement.addEventListener("click",createMarker);
-moveMarkerElement.textContent = "Move marker";
-deleteMarkerElement.textContent = "Delete marker";
-createMarkerElement.textContent = "Create Marker";
+inputFileElement.addEventListener("click",clickDonwloadFile);
+moveMarkerElement.appendChild(changeIcon);
+deleteMarkerElement.appendChild(deleteIcon);
+createMarkerElement.appendChild(markerIcon);
+//createMarkerElement.textContent = "Create Marker";
+inputFileElement.appendChild(uploadIcon);
 
-const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement];
+
+let inputElement = document.createElement("input");
+inputElement.type = "file";
+inputElement.id = "fileInput";
+inputElement.name = "map_file";
+inputElement.accept=".gpx,.kml";
+inputElement.multiple="multiple";
+
+
+const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement, inputElement, inputFileElement];
 
 
 
@@ -141,7 +174,7 @@ const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement
 let divBarElement = document.createElement("div");
 divBarElement.className = "leaflet-bar leaflet-control";
 
-let divBarElementsList = [divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
+let divBarElementsList = [divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
 
 for (var i = 0; i < divBarElementsList.length; i++) {
     //divBarElementsList[i].id = "divId" + i;
@@ -151,6 +184,11 @@ for (var i = 0; i < divBarElementsList.length; i++) {
 
 divBarElementsList = [];
 console.log(divBarElementsList)
+
+
+function clickDonwloadFile(){
+    document.getElementById('fileInput').click();
+}
 
 
 //appendChild(deleteMarker).appendChild(createMarker);
@@ -545,8 +583,19 @@ function displayPoints()
         geojson_points1 = pointsToGeoJSON(Points);
         console.log(geojson2);
         console.log(geojson_points1);
-        let hg = L.control.heightgraph();
+        let hg = L.control.heightgraph({expandControls: false,
+
+        });
         hg.addTo(myMap);
+
+        let graph = document.getElementsByClassName("heightgraph")[0];
+
+        graph.style.gridColumn = '2 / span 1';
+        graph.style.gridRow = '1 / span 1';
+
+        let destination = document.getElementById("information-grid");
+        destination.appendChild(graph);
+
         hg.addData(geojson_points1);
     //     hg.addData(geojson2);
     //     L.geoJson(geojson_markers).addTo(map);

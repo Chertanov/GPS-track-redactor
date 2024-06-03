@@ -1,12 +1,121 @@
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
 body {
-  padding: 50px;
+
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+#map {
+    left: 0px;
+    right: 0px;
+    height: 100%;
+    position: absolute;
 }
 
 a {
   color: #00B7FF;
 }
 
-#map{
-  height: 600px;
+
+.leaflet-container {
+  font-size: 13px;
+}
+
+.leaflet-left {
+  width: 100%;
+}
+
+.leaflet-left .leaflet-control {
+  margin-left: 0px;
+}
+
+.leaflet-bottom .leaflet-control {
+  margin-bottom: 0px;
+}
+
+.leaflet-right .leaflet-control {
+  box-shadow: 0 1px 5px rgb(0 0 0 / 65%);
+  border: unset;
+}
+
+
+.track-list-container{
+  position: absolute; /* установка позиции как абсолютной */
+  bottom: 0; /* расположение внизу */
+  left: 0; /* расположение слева */
+  width: 14%; /* ширина внутреннего div (10% высоты внешнего div) */
+  height: 20%; /* высота внутреннего div (7% ширины внешнего div) */
+  background-color: rgba(255, 255, 255, 0.5); /* цвет с прозрачностью */
+  z-index: 999;
+  padding: 0.5%;
+}
+
+.track-list{
+  grid-column: 1 / span 1;
+  grid-row: 1 / span 1;
+}
+
+#height-graph{
+  grid-column: 2 / span 2;
+  grid-row: 1 / span 6;
+}
+
+.scrollable-list {
+  max-height: 200px; /* Set the height you want */
+  overflow-y: auto;  /* Enable vertical scrolling */
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+/* Custom scrollbar for WebKit browsers */
+.scrollable-list::-webkit-scrollbar {
+  width: 12px;
+}
+
+.scrollable-list::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+
+.scrollable-list::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+.scrollable-list::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+#track-info{
+
+}
+
+.panels-container {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: #fcfcfc;
+  box-shadow: 2px 2px 2px #BCBCBC;
+  -webkit-box-shadow: 2px 2px 2px #BCBCBC;
+  -moz-box-shadow: 2px 2px 2px #BCBCBC;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.trace-info {
+  width: 100vw;
+  display: grid;
+  grid-gap: 0px 0px;
+  justify-items: right;
+  align-items: center;
+  grid-auto-rows: min-content;
 }

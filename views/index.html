@@ -43,12 +43,11 @@
     <title>Document</title>
 </head>
 <body>
-    <input type="file" accept=".gpx,.kml" name="map_file" multiple="multiple">
     
-
+    
     <div id="map">
 
-        <div >
+        <!--<div >
             <button onclick="moveMarker()">Move marker</button>
             <button onclick="deleteMarker()">Delete marker</button>
             <button onclick="createMarker()">Create Marker</button>
@@ -56,9 +55,43 @@
     
     
             <button onclick="getCurrentPosition()" class="leaflet-bar-part leaflet-bar-part-single" title="Show my position"><span class="fas fa-crosshairs"></span></button>
-        </div>
+        </div>-->
+        
+        <div class="leaflet-bottom leaflet-left">
+            <div id="track-info" class="leaflet-control">
+                <div id="information-grid" class="panels-container trace-info maximized" style>
+                        <div id="track-list ">
+                            
+                            <div class="scrollable-list">
+                                <ul>
+                                    <li>Item 1</li>
+                                    <li>Item 2</li>
+                                    <li>Item 3</li>
+                                    <li>Item 4</li>
+                                    <li>Item 5</li>
+                                    <li>Item 6</li>
+                                    <li>Item 7</li>
+                                    <li>Item 8</li>
+                                    <li>Item 9</li>
+                                    <li>Item 10</li>
+                                    <li>Item 11</li>
+                                    <li>Item 12</li>
+                                    <li>Item 13</li>
+                                    <li>Item 14</li>
+                                    <li>Item 15</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!--<div id="height-graph leaflet-control heightgraph">
+                            <p>not test info</p>
+                        </div>-->
 
+                </div>
+            </div>
+        </div>
     </div>
+
+    
     <div >
         <button onclick="clearMap()">Delete</button>
     </div>
