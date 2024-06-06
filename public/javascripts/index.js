@@ -14,7 +14,7 @@ var Markers = [];
 var delete_allowance = false;
 var move_allowance = false;
 var create_allowance = false;
-var graphType = false;
+var currentShownTrackIndex = null;
 var fileList = []
 var xmlDoc_list = [];
 //var currentPositionhandle = window.navigator;
@@ -111,7 +111,14 @@ let zoomControls = L.control.zoom({
 zoomControls.addTo(myMap);
 
 
-let hg = L.control.heightgraph({expandControls: false,height:180, width:1200});
+let hg = L.control.heightgraph({expandControls: false,height:180, width:800, translation: {
+    distance: "Distance",
+    elevation: "Elevation",
+    segment_length: "Segment length",
+    type: "Type",
+    legend: " "
+    }});
+
 hg.addTo(myMap);
 
 let graph = document.getElementsByClassName("heightgraph")[0];
@@ -130,7 +137,7 @@ changeToHeightToLength.style.gridColumn = '2 / span 1';
 changeToHeightToLength.gridRow = '2 / span 1';
 changeToHeightToLength.textContent = "Change to Height/Length graph";
 changeToHeightToLength.addEventListener("click", function(event) {
-    graphType = false;
+    focusOnTrack(currentShownTrackIndex, true);
 });
 
 //moveMarkerElement.className = "";
@@ -142,7 +149,7 @@ changeToHeightToTime.style.gridColumn = '3 / span 1';
 changeToHeightToTime.gridRow = '2 / span 1';
 changeToHeightToTime.textContent = "Change to Height/Time graph";
 changeToHeightToTime.addEventListener("click", function(event) {
-    graphType = true;
+    focusOnTrack(currentShownTrackIndex, false);
 });
 
 destination.appendChild(changeToHeightToLength);
@@ -206,8 +213,7 @@ let deleteIcon = document.createElement("span");
 deleteIcon.className = "fas fa-trash";
 let uploadIcon = document.createElement("span");
 uploadIcon.className = "fas fa-upload";
-let saveIcon = document.createElement("span");
-saveIcon.className = "fas fa-save";
+
 
 
 
@@ -238,7 +244,7 @@ inputElement.accept=".gpx,.kml";
 inputElement.multiple="multiple";
 
 
-const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement, inputElement, inputFileElement];
+const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement, inputFileElement, inputElement,];
 
 
 
@@ -380,7 +386,15 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
                 var lat = trkpt.getAttribute('lat');
                 var lon = trkpt.getAttribute('lon');
                 var ele = trkpt.querySelector('ele').textContent;
-                Points_file.push([Number(lon),Number(lat),Number(ele)]);
+                try {
+                    var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
+                    
+                    Points_file.push([Number(lon),Number(lat),Number(ele), Number(time)]);
+                }
+                catch {
+                    Points_file.push([Number(lon),Number(lat),Number(ele)]);
+                }
+                
                 //console.log([Number(lon),Number(lat)]);
                 //console.log('Latitude:', lat, 'Longitude:', lon);
                 // You can process each trkpt element here
@@ -493,8 +507,11 @@ function reloadPath(points_index){
 }
 
 
-function pointsToGeoJSON(points_list) { //need to be changed to make proper GeoJson
-    const geojson = [{
+function pointsToGeoJSON(points_list, type) { //need to be changed to make proper GeoJson
+    let geojson = null;
+
+    if (type){
+        geojson = [{
       type: "FeatureCollection",
       features: [{
           type: "Feature",
@@ -510,7 +527,34 @@ function pointsToGeoJSON(points_list) { //need to be changed to make proper GeoJ
                 "summary": "steepness"
             }
     }];
+    }
+    else{
 
+        const fourthElements = points_list.map(subArray => subArray[3]);
+        //console.log(fourthElements);
+        let minTimeValue = fourthElements.reduce((acc, current) => Math.min(acc, current));
+        //console.log(minTimeValue);
+
+       geojson = [{
+      type: "FeatureCollection",
+      features: [{
+          type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: points_list.map(point => {return [(point[3] - minTimeValue)/60/19.305, Number(100), point[2]]})
+          },
+          properties: {"attributeType": "3"}
+        }],
+      properties: {
+                "Creator": "OpenRouteService.org",
+                "records": 1,
+                "summary": "steepness"
+            }
+    }]; 
+    }
+    console.log("Type and Geojson:");
+    console.log(type);
+    console.log(geojson);
     return geojson;
 }
 
@@ -668,11 +712,18 @@ function addInfoListItem(addIndex){
 
     fileInfoHandle = fileList[addIndex];
 
+    let saveIcon = document.createElement("span");
+    saveIcon.className = "fas fa-save";
+
+    let deleteIconBottom = document.createElement("span");
+    deleteIconBottom.className = "fas fa-trash";
+
     let buttonChoice = document.createElement("button");
     buttonChoice.className = "button-main";
     buttonChoice.textContent = fileInfoHandle.name;
     buttonChoice.addEventListener("click", function(event) {
-        focusOnTrack(addIndex);
+        currentShownTrackIndex = addIndex;
+        focusOnTrack(addIndex, true);
     });
 
     let divPointItemButtons = document.createElement("div");
@@ -682,13 +733,15 @@ function addInfoListItem(addIndex){
     buttonSave.className = "button-secondary";
     buttonSave.appendChild(saveIcon);
     buttonSave.addEventListener("click", function(event) {
+        currentShownTrackIndex = addIndex;
         save(addIndex);
     });
 
     let buttonDelete = document.createElement("button");
     buttonDelete.className = "button-secondary";
-    buttonDelete.appendChild(deleteIcon);
+    buttonDelete.appendChild(deleteIconBottom);
     buttonDelete.addEventListener("click", function(event) {
+        currentShownTrackIndex = null;
         clearFile(addIndex);
         const listItemToDelete = this.closest("li");
         listItemToDelete.remove();
@@ -707,8 +760,9 @@ function addInfoListItem(addIndex){
 }
 
 
-function focusOnTrack(trackIndex){
-    geojson_points1 = pointsToGeoJSON(Points[trackIndex]);
+function focusOnTrack(trackIndex, trackType){
+    console.log(trackIndex);
+    geojson_points1 = pointsToGeoJSON(Points[trackIndex], trackType);
         //geojson_points1 = pointsToGeoJSONDeprecated(Points);
     hg.addData(geojson_points1);
 }
@@ -762,6 +816,43 @@ function download(index)
     a.click();
 
     
-}
+};
 
 
+function setElevationProfileWidth() {
+    let w = window.outerWidth;
+    let h = window.outerHeight;
+    let txt = "Window size: width=" + w + ", height=" + h;
+    console.log(txt);
+    //if (!this.elevation_input.checked) return;
+
+    if (graph) graph.style.display = 'none';
+    //this.slide_container.style.display = 'none';
+    //this.trace_info_grid.style.width = 'max-content';
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var embedding = urlParams.has('embed');
+
+    var gridHandle = document.getElementById('information-grid');
+
+    var map_width = myMap._container.offsetWidth;
+    var info_width = gridHandle.offsetWidth;
+    var info_height = gridHandle.offsetHeight;
+    var elevation_profile_width = Math.min(map_width - info_width, map_width * 4 / 5);
+    var elevation_profile_height = Math.min(info_height, embedding ? 120 : 160);
+
+    console.log(map_width);
+
+    if (elevation_profile_width != hg._width || elevation_profile_height != hg._height) {
+        hg.resize({ width: elevation_profile_width, height: elevation_profile_height });
+    }
+
+    if (graph) graph.style.display = '';
+    //if (!embedding) this.slide_container.style.display = '';
+    //this.trace_info_grid.style.width = '';
+
+};
+
+
+window.addEventListener('resize', setElevationProfileWidth());

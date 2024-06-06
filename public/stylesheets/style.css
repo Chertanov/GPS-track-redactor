@@ -98,7 +98,7 @@ a {
 }
 
 .scrollable-list {
-  max-height: 200px; /* Set the height you want */
+  max-height: 150px; /* Set the height you want */
   overflow-y: auto;  /* Enable vertical scrolling */
   padding: 10px;
 }
@@ -188,9 +188,23 @@ a {
   width: 100%;
 }
 
+.leaflet-touch .leaflet-bar button {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+}
 
-
-
+.leaflet-bar button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  color: #000;
+}
 
 
 
