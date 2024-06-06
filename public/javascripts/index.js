@@ -86,7 +86,7 @@ let myMap = L.map("map", {
     zoom: 20,
     preferCanvas: false,
     zoomControl: false,
-    attributionControl:true,
+    attributionControl:false,
     boxZoom:false,
     inertia:true,
     doubleClickZoom:false
@@ -102,7 +102,9 @@ let baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/
     }).addTo(myMap);
 baseLayer.myId = "Base";
 
-
+L.control.attribution({
+    position: "topleft"
+}).addTo(myMap);
 
 
 let zoomControls = L.control.zoom({
@@ -111,13 +113,48 @@ let zoomControls = L.control.zoom({
 zoomControls.addTo(myMap);
 
 
-let hg = L.control.heightgraph({expandControls: false,height:180, width:800, translation: {
-    distance: "Distance",
+const colorMappings = {
+    steepness: {
+        '0': {
+            text: '0%',
+            color: '#ffcc99'
+        },
+        '1': {
+            text: '1-3%',
+            color: '#F29898'
+        },
+        '2': {
+            text: '4-6%',
+            color: '#E07575'
+        },
+        '3': {
+            text: '7-9%',
+            color: '#52CF53'
+        },
+        '4': {
+            text: '10-15%',
+            color: '#BE312F'
+        },
+        '5': {
+            text: '16%+',
+            color: '#AD0F0C'
+        }
+    },
+    
+};
+
+
+let hg = L.control.heightgraph({expandControls: false,height:180, width:800, 
+    mappings: colorMappings,
+    translation: {
+    distance: "Distance/Time",
     elevation: "Elevation",
-    segment_length: "Segment length",
+    segment_length: "Total length",
     type: "Type",
     legend: " "
-    }});
+    },
+    
+});
 
 hg.addTo(myMap);
 
@@ -182,25 +219,26 @@ hg.addData(geojson2);
 
 
 
-let locateControl = L.control.locate({
-    position: 'topright',  // Position of the locate control
-    setView: 'once',       // Automatically sets the map view (options: 'once', 'always', false)
-    keepCurrentZoomLevel: true,
-    strings: {
-        title: "Show current position",  // Title of the locate button
 
-    }
-});
-locateControl.addTo(myMap);
+// let locateControl = L.control.locate({
+//     position: 'topright',  // Position of the locate control
+//     setView: 'once',       // Automatically sets the map view (options: 'once', 'always', false)
+//     keepCurrentZoomLevel: true,
+//     strings: {
+//         title: "Show current position",  // Title of the locate button
+
+//     }
+// });
+// locateControl.addTo(myMap);
 
 
-let locateControlElements = document.getElementsByClassName("leaflet-control-locate-location-arrow");
-;
-for (var i = 0; i < locateControlElements.length; i++) {
-    locateControlElements[i].classList.add("fas");
-    locateControlElements[i].classList.add("fa-crosshairs");
-    locateControlElements[i].classList.remove("leaflet-control-locate-location-arrow");
-}
+// let locateControlElements = document.getElementsByClassName("leaflet-control-locate-location-arrow");
+// ;
+// for (var i = 0; i < locateControlElements.length; i++) {
+//     locateControlElements[i].classList.add("fas");
+//     locateControlElements[i].classList.add("fa-crosshairs");
+//     locateControlElements[i].classList.remove("leaflet-control-locate-location-arrow");
+// }
 
 let rightTopPanel = document.getElementsByClassName("leaflet-top leaflet-right")[0];
 
@@ -213,6 +251,8 @@ let deleteIcon = document.createElement("span");
 deleteIcon.className = "fas fa-trash";
 let uploadIcon = document.createElement("span");
 uploadIcon.className = "fas fa-upload";
+let locationIcon = document.createElement("span");
+locationIcon.className = "fas fa-crosshairs";
 
 
 
@@ -221,19 +261,23 @@ let moveMarkerElement = document.createElement("button");
 let deleteMarkerElement = document.createElement("button");
 let createMarkerElement = document.createElement("button");
 let inputFileElement = document.createElement("button");
+let currentLocationElement = document.createElement("button");
 moveMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 deleteMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 createMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 inputFileElement.className = "leaflet-bar-part leaflet-bar-part-single";
+currentLocationElement.className = "leaflet-bar-part leaflet-bar-part-single";
 moveMarkerElement.addEventListener("click",moveMarker);
 deleteMarkerElement.addEventListener("click",deleteMarker);
 createMarkerElement.addEventListener("click",createMarker);
 inputFileElement.addEventListener("click",clickDonwloadFile);
+currentLocationElement.addEventListener("click",getCurrentPosition);
 moveMarkerElement.appendChild(changeIcon);
 deleteMarkerElement.appendChild(deleteIcon);
 createMarkerElement.appendChild(markerIcon);
 //createMarkerElement.textContent = "Create Marker";
 inputFileElement.appendChild(uploadIcon);
+currentLocationElement.appendChild(locationIcon);
 
 
 let inputElement = document.createElement("input");
@@ -244,7 +288,7 @@ inputElement.accept=".gpx,.kml";
 inputElement.multiple="multiple";
 
 
-const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement, inputFileElement, inputElement,];
+const buttonsList = [currentLocationElement,moveMarkerElement, createMarkerElement, deleteMarkerElement, inputFileElement, inputElement,];
 
 
 
@@ -252,7 +296,7 @@ const buttonsList = [moveMarkerElement, createMarkerElement, deleteMarkerElement
 let divBarElement = document.createElement("div");
 divBarElement.className = "leaflet-bar leaflet-control";
 
-let divBarElementsList = [divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
+let divBarElementsList = [divBarElement.cloneNode(true), divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
 
 for (var i = 0; i < divBarElementsList.length; i++) {
     //divBarElementsList[i].id = "divId" + i;
@@ -527,6 +571,8 @@ function pointsToGeoJSON(points_list, type) { //need to be changed to make prope
                 "summary": "steepness"
             }
     }];
+
+
     }
     else{
 
@@ -551,6 +597,9 @@ function pointsToGeoJSON(points_list, type) { //need to be changed to make prope
                 "summary": "steepness"
             }
     }]; 
+
+
+
     }
     console.log("Type and Geojson:");
     console.log(type);
@@ -626,6 +675,7 @@ function markerClick(e){
     delete_allowance = false;
     move_allowance = false;
     create_allowance = false;
+    console.log(Points);
 }
 
 
@@ -765,6 +815,8 @@ function focusOnTrack(trackIndex, trackType){
     geojson_points1 = pointsToGeoJSON(Points[trackIndex], trackType);
         //geojson_points1 = pointsToGeoJSONDeprecated(Points);
     hg.addData(geojson_points1);
+    let steepness = document.getElementById("selectionText");
+    steepness.textContent = "";
 }
 
 
@@ -819,11 +871,15 @@ function download(index)
 };
 
 
+
+
 function setElevationProfileWidth() {
+
+    
     let w = window.outerWidth;
     let h = window.outerHeight;
     let txt = "Window size: width=" + w + ", height=" + h;
-    console.log(txt);
+    //console.log(txt);
     //if (!this.elevation_input.checked) return;
 
     if (graph) graph.style.display = 'none';
@@ -837,22 +893,75 @@ function setElevationProfileWidth() {
     var gridHandle = document.getElementById('information-grid');
 
     var map_width = myMap._container.offsetWidth;
-    var info_width = gridHandle.offsetWidth;
-    var info_height = gridHandle.offsetHeight;
+    var info_width = 0;// gridHandle.offsetWidth;
+    var info_height =0;// gridHandle.offsetHeight;
     var elevation_profile_width = Math.min(map_width - info_width, map_width * 4 / 5);
     var elevation_profile_height = Math.min(info_height, embedding ? 120 : 160);
 
-    console.log(map_width);
+    //console.log(map_width);
+    // console.log("Info about variables:");
+    // console.log("map_width: "+map_width);
+    // console.log("info_width: "+info_width);
+    // console.log("info_height: "+info_height);
+    // console.log("elevation_profile_width: "+ elevation_profile_width);
+    // console.log("elevation_profile_height: "+ elevation_profile_height);
 
-    if (elevation_profile_width != hg._width || elevation_profile_height != hg._height) {
-        hg.resize({ width: elevation_profile_width, height: elevation_profile_height });
+    var graphCell = Math.ceil(changeToHeightToLength.offsetWidth/9*10 + changeToHeightToTime.offsetWidth/9*10);
+    //console.log(graphCell.textContent);
+    // console.log(graphCell);
+    // console.log(changeToHeightToLength.offsetWidth);
+    // console.log(changeToHeightToTime.offsetWidth)
+
+
+
+    if (graphCell != hg._width || elevation_profile_height != hg._height) {
+       
+        if(graphCell > 100){
+        hg.resize({ width: graphCell, height: elevation_profile_height });}
     }
 
     if (graph) graph.style.display = '';
+    document.getElementById("selectionText").textContent = " ";
     //if (!embedding) this.slide_container.style.display = '';
     //this.trace_info_grid.style.width = '';
 
 };
 
 
-window.addEventListener('resize', setElevationProfileWidth());
+//window.addEventListener('resize', setElevationProfileWidth());
+
+
+function disableMap() {
+    
+    myMap.dragging.disable();
+    myMap.touchZoom.disable();
+    myMap.doubleClickZoom.disable();
+    myMap.scrollWheelZoom.disable();
+    myMap.boxZoom.disable();
+    //myMap.disable();
+    if (myMap.tap) myMap.tap.disable();
+};
+
+function enableMap() {
+    
+    myMap.dragging.enable();
+    myMap.touchZoom.enable();
+    myMap.doubleClickZoom.enable();
+    myMap.scrollWheelZoom.enable();
+    myMap.boxZoom.enable();
+    //this.zoom.enable();
+    if (myMap.tap) myMap.tap.enable();
+};
+
+
+let controlDiv = document.querySelector('.leaflet-bottom');
+
+controlDiv.addEventListener("mouseover", disableMap());
+controlDiv.addEventListener("mouseout", enableMap());
+
+setTimeout(setElevationProfileWidth,100);
+        
+
+
+//L.DomEvent.on(controlDiv, 'mouseover', disableMap());
+//L.DomEvent.on(controlDiv, 'mouseout', enableMap());
