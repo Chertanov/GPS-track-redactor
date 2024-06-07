@@ -63,15 +63,7 @@ a {
   padding: 0.5%;
 }
 
-.track-list{
-  grid-column: 1 / span 1;
-  grid-row: 1 / span 2;
-}
 
-#height-graph{
-  grid-column: 2 / span 2;
-  grid-row: 1 / span 6;
-}
 
 .panels-container {
   -webkit-touch-callout: none;
@@ -109,7 +101,7 @@ a {
 .scrollable-list {
   max-height: 150px; /* Set the height you want */
   overflow-y: auto;  /* Enable vertical scrolling */
-  padding: 10px;
+  padding: 5px;
 }
 
 .scrollable-list ul {
@@ -118,15 +110,31 @@ a {
   margin: 0;
 }
 
-.scrollable-list li {
-  display: flex; /* Use flexbox for layout */
-  align-items: center; /* Center items vertically */
-  background-color: #ffffff; /* Background color for items */
-  margin-bottom: 5px; /* Space between items */
-  padding: 10px; /* Padding inside each item */
-  border: 1px solid #ddd; /* Border around each item */
-  border-radius: 4px; /* Rounded corners */
-  transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+
+@media (max-width: 600px) {
+  .scrollable-list li {
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Center items vertically */
+    background-color: #ffffff; /* Background color for items */
+    margin-bottom: 5px; /* Space between items */
+    padding: 5px; /* Padding inside each item */
+    border: 1px solid #ddd; /* Border around each item */
+    border-radius: 4px; /* Rounded corners */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+  }
+}
+
+@media (min-width: 601px){
+  .scrollable-list li {
+    display: flex; /* Use flexbox for layout */
+    align-items: center; /* Center items vertically */
+    background-color: #ffffff; /* Background color for items */
+    margin-bottom: 5px; /* Space between items */
+    padding: 10px; /* Padding inside each item */
+    border: 1px solid #ddd; /* Border around each item */
+    border-radius: 4px; /* Rounded corners */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+  }
 }
 
 .scrollable-list li:hover {
@@ -218,13 +226,78 @@ a {
   color: #000;
 }
 
+@media (min-width: 451px){
+  #height-length{
+    grid-row: 2 / span 1;
+    grid-column: 2 / span 1;
+  }
+
+  #height-time{
+    grid-row: 2 / span 1;
+    grid-column: 3 / span 1;
+  }
+
+  #track-list{
+    grid-column: 1 / span 1;
+    grid-row: 1 / span 2;
+  }
+}
+
+@media (max-width: 450px){
+  #height-length{
+    grid-row: 3 / span 1;
+    grid-column: 1 / span 1;
+  }
+
+  #height-time{
+    grid-row: 3 / span 1;
+    grid-column: 2 / span 1;
+  }
+
+  #track-list{
+    grid-column: 1 / span 2;
+    grid-row: 2 / span 1;
+  }
+}
 
 
+#infoList{
+  display: flex;
+  flex-direction: column;
+}
 
 
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
 
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  max-width: 500px;
+}
 
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
 
-
-
-
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}

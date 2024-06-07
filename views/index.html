@@ -60,7 +60,24 @@
 
 
         
-        
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Input Form</h2>
+                <label for="input1">Input 1:</label>
+                <input type="number" min="1" max="8999" id="input1">
+                <br><br>
+                <div id="timeRedact">
+                <label for="input2">Input 2:</label>
+                <input type="range" id="input2">
+                <div class="output">
+                    Value: <span id="valueDisplay"></span>
+                </div>
+                </div>
+                <br><br>
+                <button id="saveBtn">Save</button>
+            </div>
+        </div>
     
 
 
@@ -68,7 +85,7 @@
         <div class="leaflet-bottom leaflet-left" onmouseover="disableMap()" onmouseout="enableMap()">
             <div id="track-info" class="leaflet-control">
                 <div id="information-grid" class="panels-container trace-info maximized" style>
-                        <div id="track-list ">
+                        <div id="track-list">
                             
                             <div class="scrollable-list">
                                 <ul id="infoList">
@@ -105,78 +122,10 @@
         </div>
 
 
-
-
-
-
-        <!-- <div class="leaflet-bottom leaflet-left">
-            <div id="info-grid" class="panels-container trace-info maximized">
-                
-            <div class="heightgraph leaflet-control" style="grid-area: 1 / 3 / span 6 / span 1;">
-                <svg class="heightgraph-container" width="711" height="159" style="display: block;">
-                    <g transform="translate(60,15)">
-                        <g class="grid" transform="translate(0,114)" fill="none" font-size="10" font-family="sans-serif" text-anchor="middle">
-                            <path class="domain" stroke="currentColor" d="M0.5,-114V0.5H641.5V-114"></path>
-                            <g class="tick" opacity="1" transform="translate(0.5,0)">
-                                <line stroke="currentColor" y2="-114"></line>
-                                <text fill="currentColor" y="3" dy="0.71em"></text>
-                            </g>
-                            <g class="tick" opacity="1" transform="translate(58.65213070881487,0)">
-                                <line stroke="currentColor" y2="-114"></line>
-                                <text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(116.80426141762975,0)"><line stroke="currentColor" y2="-114">
-
-                                </line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(174.95639212644463,0)">
-                                    <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(233.1085228352595,0)">
-                                        <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(291.2606535440744,0)">
-                                            <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(349.41278425288925,0)">
-                                                <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(407.5649149617041,0)">
-                                                    <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(465.717045670519,0)">
-                                                        <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(523.8691763793339,0)">
-                                                            <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(582.0213070881488,0)">
-                                                                <line stroke="currentColor" y2="-114"></line><text fill="currentColor" y="3" dy="0.71em"></text></g><g class="tick" opacity="1" transform="translate(640.1734377969636,0)">
-                                                                    <line stroke="currentColor" y2="-114"></line>
-                                                                    <text fill="currentColor" y="3" dy="0.71em"></text></g></g><g class="grid" fill="none" font-size="10" font-family="sans-serif" text-anchor="end">
-                                                                        <path class="domain" stroke="currentColor" d="M641,114.5H0.5V0.5H641"></path><g class="tick" opacity="1" transform="translate(0,105)">
-                                                                            <line stroke="currentColor" x2="641"></line><text fill="currentColor" x="-3" dy="0.32em"></text></g><g class="tick" opacity="1" transform="translate(0,76.04399999988418)">
-                                                                                <line stroke="currentColor" x2="641"></line><text fill="currentColor" x="-3" dy="0.32em"></text></g><g class="tick" opacity="1" transform="translate(0,47.08799999976836)">
-                                                                                    <line stroke="currentColor" x2="641"></line><text fill="currentColor" x="-3" dy="0.32em"></text></g><g class="tick" opacity="1" transform="translate(0,18.131999999652535)">
-                                                                                        <line stroke="currentColor" x2="641"></line><text fill="currentColor" x="-3" dy="0.32em"></text></g></g>
-                                                                                        <path class="area" d="M0,94.05L72.46067887664653,83.6L144.05549742816052,73.15L182.18278059428934,73.15L227.8043628407808,104.5L261.9822158295347,52.25000000000001L298.37866562459897,104.5L335.8570571143936,94.05L386.97450577417663,104.5L428.72285079885927,104.5L481.2815054932716,9.500000000000004L526.7630990647748,104.5L589.3911988462826,57L641,104.5L641,114L589.3911988462826,114L526.7630990647748,114L481.2815054932716,114L428.72285079885927,114L386.97450577417663,114L335.8570571143936,114L298.37866562459897,114L261.9822158295347,114L227.8043628407808,114L182.18278059428934,114L144.05549742816052,114L72.46067887664653,114L0,114Z" stroke="#d1d1d1" style="fill: rgb(209, 209, 209); pointer-events: none;"></path>
-                                                                                        <g transform="translate(0,114)" class="x axis" fill="none" font-size="10" font-family="sans-serif" text-anchor="middle">
-                                                                                            <path class="domain" stroke="currentColor" d="M0.5,6V0.5H641.5V6"></path><g class="tick" opacity="1" transform="translate(0.5,0)">
-                                                                                                <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">0 mi</text></g><g class="tick" opacity="1" transform="translate(58.65213070881487,0)">
-                                                                                                    <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">1 mi</text></g><g class="tick" opacity="1" transform="translate(116.80426141762975,0)">
-                                                                                                        <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">2 mi</text></g><g class="tick" opacity="1" transform="translate(174.95639212644463,0)">
-                                                                                                            <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">3 mi</text></g><g class="tick" opacity="1" transform="translate(233.1085228352595,0)">
-                                                                                                                <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">4 mi</text></g><g class="tick" opacity="1" transform="translate(291.2606535440744,0)">
-                                                                                                                    <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">5 mi</text></g><g class="tick" opacity="1" transform="translate(349.41278425288925,0)">
-                                                                                                                        <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">6 mi</text></g><g class="tick" opacity="1" transform="translate(407.5649149617041,0)">
-                                                                                                                            <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">7 mi</text></g><g class="tick" opacity="1" transform="translate(465.717045670519,0)">
-                                                                                                                                <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">8 mi</text></g><g class="tick" opacity="1" transform="translate(523.8691763793339,0)">
-                                                                                                                                    <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">9 mi</text></g><g class="tick" opacity="1" transform="translate(582.0213070881488,0)">
-                                                                                                                                        <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">10 mi</text></g><g class="tick" opacity="1" transform="translate(640.1734377969636,0)">
-                                                                                                                                            <line stroke="currentColor" y2="6"></line><text fill="currentColor" y="9" dy="0.71em">11 mi</text></g></g><g class="y axis" fill="none" font-size="10" font-family="sans-serif" text-anchor="end">
-                                                                                                                                                <path class="domain" stroke="currentColor" d="M-6,114.5H0.5V0.5H-6"></path><g class="tick" opacity="1" transform="translate(0,105)"><line stroke="currentColor" x2="-6"></line>
-                                                                                                                                                    <text fill="currentColor" x="-9" dy="0.32em">0 ft</text></g><g class="tick" opacity="1" transform="translate(0,76.04399999988418)"><line stroke="currentColor" x2="-6"></line>
-                                                                                                                                                        <text fill="currentColor" x="-9" dy="0.32em">10 ft</text></g><g class="tick" opacity="1" transform="translate(0,47.08799999976836)"><line stroke="currentColor" x2="-6"></line>
-                                                                                                                                                            <text fill="currentColor" x="-9" dy="0.32em">20 ft</text></g><g class="tick" opacity="1" transform="translate(0,18.131999999652535)"><line stroke="currentColor" x2="-6"></line>
-                                                                                                                                                                <text fill="currentColor" x="-9" dy="0.32em">30 ft</text></g></g><g class="focusbox" transform="translate(525.9499969482422,114)" style="display: none;">
-                                                                                                                                                                    <rect x="3" y="-114" display="block" height="67.5" width="110.05000305175781"></rect><text x="7" y="-99" id="heightgraph.distance">Distance:<tspan class="tspan"> 11.0 mi</tspan>
-                                                                                                                                                                    </text><text x="7" y="-84" id="heightgraph.height">Altitude:<tspan class="tspan"> 0 ft</tspan></text>
-                                                                                                                                                                    <text x="7" y="-69" id="heightgraph.blockdistance">Segment:<tspan class="tspan"> 11.0 mi</tspan></text>
-                                                                                                                                                                    <text x="7" y="-54" id="heightgraph.type">Category:<tspan class="tspan"> Missing</tspan></text></g>
-                                                                                                                                                                    <g class="focusLine"><line y1="0" y2="114" x1="641" x2="641" style="display: none;"></line></g>
-                                                                                                                                                                    <rect width="641" height="114" style="fill: none; stroke: none; pointer-events: all;"></rect>
-                                                                                                                                                                    <path d="M0,94.05L12.07677981277442,92.30833333333334C24.15355962554884,90.56666666666666,48.30711925109768,87.08333333333333,72.31636882245778,83.60000000000001C96.32561839381786,80.11666666666666,120.19055791098918,76.63333333333334,138.47757486392968,74.89166666666667C156.76459181687014,73.15,169.47368620557972,73.15,183.43183044101644,78.375C197.38997467645314,83.60000000000001,212.59716875861696,94.05,225.8970746311579,90.56666666666666C239.1969805036988,87.08333333333333,250.58959816661672,69.66666666666667,262.3519819639198,69.66666666666667C274.1143657612228,69.66666666666667,286.24651569291086,87.08333333333333,298.55898924038735,94.05C310.8714627878639,101.01666666666667,323.36425995112876,97.53333333333335,338.1302333093917,97.53333333333335C352.89620666765467,97.53333333333335,369.9353562209156,101.01666666666667,385.41298850165987,102.75833333333333C400.89062078240414,104.5,414.80673579063176,104.5,430.5245690771476,88.66666666666667C446.24240236366336,72.83333333333333,463.76195392846745,41.166666666666664,480.10199530612005,41.166666666666664C496.44203668377264,41.166666666666664,511.60256787427375,72.83333333333333,529.6208500997756,80.75C547.6391323252774,88.66666666666667,568.51516558578,72.83333333333333,587.5546490749842,72.83333333333333C606.5941325641884,72.83333333333333,623.7970662820942,88.66666666666667,632.3985331410471,96.58333333333333L641,104.5" class="border-top"></path></g>
-                                                                                                                                                                    <path class="select-symbol" d="M0,-5.549055267050423L4.805622828269508,2.7745276335252114L-4.805622828269508,2.7745276335252114Z" transform="translate(689,153) rotate(0)" id="leftArrowSelection" style="fill: rgb(0, 0, 0);"></path>
-                                                                                                                                                                    <path class="select-symbol" d="M0,-5.549055267050423L4.805622828269508,2.7745276335252114L-4.805622828269508,2.7745276335252114Z" transform="translate(701,150) rotate(180)" id="rightArrowSelection" style="fill: rgb(0, 0, 0);"></path>
-                                                                                                                                                                    <text x="679" y="154" class="select-info" id="selectionText" text-anchor="end">Surface</text></svg></div></div>
-        </div></div> -->
-
     </div>
 
 
-
+    
 
 
 

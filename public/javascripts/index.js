@@ -10,10 +10,13 @@
 
 
 var Points = [];
+var pointsLength = Points.length;
+var PointsVariant = [];
 var Markers = [];
 var delete_allowance = false;
 var move_allowance = false;
 var create_allowance = false;
+var redact_allowance = false;
 var currentShownTrackIndex = null;
 var fileList = []
 var xmlDoc_list = [];
@@ -22,6 +25,11 @@ var currentPosition = [];
 var debug_info_handle = document.getElementById("debug_info");
 
 
+
+const modal = document.getElementById('myModal');
+//const openModalBtn = document.getElementById('openModalBtn');
+const closeModalSpan = document.querySelector('.close');
+const saveBtn = document.getElementById('saveBtn');
 
 
 
@@ -170,8 +178,9 @@ destination.appendChild(graph);
 
 let changeToHeightToLength = document.createElement("button");
 changeToHeightToLength.className = "change-button leaflet-control";
-changeToHeightToLength.style.gridColumn = '2 / span 1';
-changeToHeightToLength.gridRow = '2 / span 1';
+changeToHeightToLength.id = "height-length";
+// changeToHeightToLength.style.gridColumn = '2 / span 1';
+// changeToHeightToLength.gridRow = '2 / span 1';
 changeToHeightToLength.textContent = "Change to Height/Length graph";
 changeToHeightToLength.addEventListener("click", function(event) {
     focusOnTrack(currentShownTrackIndex, true);
@@ -182,8 +191,9 @@ changeToHeightToLength.addEventListener("click", function(event) {
 
 let changeToHeightToTime = document.createElement("button");
 changeToHeightToTime.className = "change-button";
-changeToHeightToTime.style.gridColumn = '3 / span 1';
-changeToHeightToTime.gridRow = '2 / span 1';
+changeToHeightToTime.id = "height-time";
+// changeToHeightToTime.style.gridColumn = '3 / span 1';
+// changeToHeightToTime.gridRow = '2 / span 1';
 changeToHeightToTime.textContent = "Change to Height/Time graph";
 changeToHeightToTime.addEventListener("click", function(event) {
     focusOnTrack(currentShownTrackIndex, false);
@@ -253,6 +263,8 @@ let uploadIcon = document.createElement("span");
 uploadIcon.className = "fas fa-upload";
 let locationIcon = document.createElement("span");
 locationIcon.className = "fas fa-crosshairs";
+let redactIcon = document.createElement("span");
+redactIcon.className = "fas fa-marker";
 
 
 
@@ -262,22 +274,29 @@ let deleteMarkerElement = document.createElement("button");
 let createMarkerElement = document.createElement("button");
 let inputFileElement = document.createElement("button");
 let currentLocationElement = document.createElement("button");
+let changeMiscInfoElement = document.createElement("button");
+
 moveMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 deleteMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 createMarkerElement.className = "leaflet-bar-part leaflet-bar-part-single";
 inputFileElement.className = "leaflet-bar-part leaflet-bar-part-single";
 currentLocationElement.className = "leaflet-bar-part leaflet-bar-part-single";
+changeMiscInfoElement.className = "leaflet-bar-part leaflet-bar-part-single";
+
 moveMarkerElement.addEventListener("click",moveMarker);
 deleteMarkerElement.addEventListener("click",deleteMarker);
 createMarkerElement.addEventListener("click",createMarker);
 inputFileElement.addEventListener("click",clickDonwloadFile);
 currentLocationElement.addEventListener("click",getCurrentPosition);
+changeMiscInfoElement.addEventListener("click", redactMarker);
+
 moveMarkerElement.appendChild(changeIcon);
 deleteMarkerElement.appendChild(deleteIcon);
 createMarkerElement.appendChild(markerIcon);
 //createMarkerElement.textContent = "Create Marker";
 inputFileElement.appendChild(uploadIcon);
 currentLocationElement.appendChild(locationIcon);
+changeMiscInfoElement.appendChild(redactIcon);
 
 
 let inputElement = document.createElement("input");
@@ -288,7 +307,7 @@ inputElement.accept=".gpx,.kml";
 inputElement.multiple="multiple";
 
 
-const buttonsList = [currentLocationElement,moveMarkerElement, createMarkerElement, deleteMarkerElement, inputFileElement, inputElement,];
+const buttonsList = [currentLocationElement,moveMarkerElement, createMarkerElement, changeMiscInfoElement, deleteMarkerElement, inputFileElement, inputElement,];
 
 
 
@@ -296,7 +315,7 @@ const buttonsList = [currentLocationElement,moveMarkerElement, createMarkerEleme
 let divBarElement = document.createElement("div");
 divBarElement.className = "leaflet-bar leaflet-control";
 
-let divBarElementsList = [divBarElement.cloneNode(true), divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
+let divBarElementsList = [divBarElement.cloneNode(true), divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true),divBarElement.cloneNode(true)];
 
 for (var i = 0; i < divBarElementsList.length; i++) {
     //divBarElementsList[i].id = "divId" + i;
@@ -404,9 +423,9 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
 
     reader.onload = function(e) {
         var xmlString = e.target.result;
-        console.log("pretype");
+        //console.log("pretype");
         var fileType = getFileType(file.name);
-        console.log('posttype');
+        //console.log('posttype');
         var Points_file = [];
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(xmlString, 'text/xml');
@@ -421,21 +440,29 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
 
         select.appendChild(opt);
 
+        var trackVariant = 0;
 
         if (fileType === 'gpx') {
             var trkptElements = xmlDoc.getElementsByTagName('trkpt');
-            //Points = new Array(trkptElements.length);
             for (var i = 0; i < trkptElements.length; i++) {
                 var trkpt = trkptElements[i];
+                if (i == 0){
+                    try {
+                        var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
+                        trackVariant = 1;
+                    }
+                    catch{};
+                };
+
                 var lat = trkpt.getAttribute('lat');
                 var lon = trkpt.getAttribute('lon');
                 var ele = trkpt.querySelector('ele').textContent;
-                try {
+                if (trackVariant) {
                     var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
                     
                     Points_file.push([Number(lon),Number(lat),Number(ele), Number(time)]);
                 }
-                catch {
+                else {
                     Points_file.push([Number(lon),Number(lat),Number(ele)]);
                 }
                 
@@ -463,6 +490,8 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
             console.error('Unsupported file type');
         }
         Points.push(Points_file);
+        console.log("TrackType: "+trackVariant);
+        PointsVariant.push(trackVariant);
 
         //displayPoints();
         readingInProgress = false;
@@ -526,6 +555,7 @@ function deleteMarker(){
     delete_allowance = true;
     move_allowance = false;
     create_allowance = false;
+    redact_allowance = false;
 }
 
 
@@ -533,6 +563,7 @@ function moveMarker(){
     delete_allowance = false;
     move_allowance = true;
     create_allowance = false;
+    redact_allowance = false;
 }
 
 
@@ -540,6 +571,14 @@ function createMarker(){
     delete_allowance = false;
     move_allowance = false;
     create_allowance = true;
+    redact_allowance = false;
+}
+
+function redactMarker(){
+    delete_allowance = false;
+    move_allowance = false;
+    create_allowance = false;
+    redact_allowance = true;
 }
 
 
@@ -601,9 +640,9 @@ function pointsToGeoJSON(points_list, type) { //need to be changed to make prope
 
 
     }
-    console.log("Type and Geojson:");
-    console.log(type);
-    console.log(geojson);
+    // console.log("Type and Geojson:");
+    // console.log(type);
+    // console.log(geojson);
     return geojson;
 }
 
@@ -611,6 +650,7 @@ function pointsToGeoJSON(points_list, type) { //need to be changed to make prope
 function markerClick(e){
     var clicked_marker = e.target;
     var way_index = 0;
+    var element_index = -1;
 
     for(var i = 0;i < Markers.length; i++){
             
@@ -618,8 +658,13 @@ function markerClick(e){
             
             way_index = i;
             //console.log(way_index);
+            // console.log(clicked_marker);
+            // console.log("Way Index:"+ way_index);
+            // console.log("Element Index:"+ element_index);
+            // console.log(Markers);
 
             element_index = Markers[way_index].findIndex((marker)=>marker ===clicked_marker );
+            // console.log("Element Index:"+ element_index);
             //console.log(element_index);
         }
     }
@@ -635,9 +680,11 @@ function markerClick(e){
     }
     else if (move_allowance){
         //console.log(move_allowance);
+        currentShownTrackIndex = way_index;
+        focusOnTrack(way_index,true);
         clicked_marker.dragging.enable();
         clicked_marker.on("moveend",function(e){
-            console.log("DragEnd")
+            //console.log("DragEnd")
             way_line = Markers[way_index].pop();
             myMap.removeLayer(way_line);
             e.target.dragging.disable();
@@ -645,11 +692,21 @@ function markerClick(e){
             var temp = e.target;
             //console.log(temp);
             //console.log(temp._latlng);
+            //console.log("Way Index:"+ way_index);
+            //console.log("Element Index:"+ element_index);
+            //console.log(Points[way_index][element_index]);
+            if (PointsVariant[way_index] == 1){
+                Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat'],Points[way_index][element_index][2], Points[way_index][element_index][3]]);
+            }else{
 
-            Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat']]);
+                Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat'],Points[way_index][element_index][2]]);
+            };
+            //console.log(Points)
             Markers[way_index].splice(element_index,1,temp);
 
             reloadPath(way_index);
+            currentShownTrackIndex = way_index;
+            focusOnTrack(way_index,true);
         });
     }
     else if (create_allowance){
@@ -661,21 +718,120 @@ function markerClick(e){
             Points[way_index].splice(element_index+1,0,temp);
             //console.log(temp);
             var marker_t = showWayPoint(temp);
-            console.log(way_index);
+            var heightNewMarker = 0
+            try {
+                heightNewMarker = (Points[way_index][element_index+2][2] + Points[way_index][element_index][2]) / 2;
+            }catch{
+                heightNewMarker = Points[way_index][element_index][2];
+            }
+            //console.log(heightNewMarker);
+            // var timeNewMarker = Math.round((Points[way_index][element_index+2][3] + Points[way_index][element_index][3]) / 2);
+            // console.log(timeNewMarker);
+
+            if (PointsVariant[way_index] == 1){
+                var timeNewMarker = 0;
+                try{
+                    timeNewMarker = Math.round((Points[way_index][element_index+2][3] + Points[way_index][element_index][3]) / 2);
+                }catch{
+                    timeNewMarker = Points[way_index][element_index][3];
+                }
+                Points[way_index][element_index+1].push(heightNewMarker,timeNewMarker);
+            }else{
+                Points[way_index][element_index+1].push(heightNewMarker);
+            };
+            //console.log(way_index);
             //Markers[way_index].push(marker_t);
             Markers[way_index].splice(element_index+1,0,marker_t);
             marker_t.addTo(myMap);
             marker_t.on('click', markerClick);
 
             reloadPath(way_index);
+            currentShownTrackIndex = way_index;
+            focusOnTrack(way_index,true);
             //myMap.off('click');
         });
     }
+    else if (redact_allowance){
+
+        disableMap();
+        document.getElementById('input1').value = Points[way_index][element_index][2];
+        
+        //document.getElementById('input2').value = 'Default Value 2';
+        //Points[way_index][element_index];
+        
+        const output = document.getElementById('valueDisplay');
+        var input2 = 0;
+        if (PointsVariant[way_index] == 1){
+
+            input2 = document.getElementById('input2');
+
+            if (element_index === 0){
+                input2.min = Points[way_index][element_index][3]-500; // Set minimum value
+            }else {
+                input2.min = Points[way_index][element_index-1][3]+1;
+            }
+
+
+            if (element_index === Points[way_index].length-1){
+                input2.max = Points[way_index][element_index][3]+500;
+            }else {
+                input2.max = Points[way_index][element_index+1][3]-1;
+            }
+
+
+            //input2.max = Points[way_index][element_index+1][3]-1; // Set maximum value
+            input2.value = Points[way_index][element_index][3]; // Set default value
+        }else{
+            document.getElementById('timeRedact').style.display = "none";
+        }
+
+        modal.style.display = 'block';
+
+        closeModalSpan.addEventListener('click', () => {
+            modal.style.display = 'none';
+            enableMap();
+        }, { once: true });
+
+        modal.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent the click event from propagating to the window
+        });
+        
+
+        saveBtn.addEventListener('click', () => {
+            const input1 = document.getElementById('input1').value;
+            const input2 = document.getElementById('input2').value;
+
+            Points[way_index][element_index][2] = input1;
+
+            if (PointsVariant[way_index] == 1){
+                Points[way_index][element_index][3] = input2;
+            }
+
+            // console.log('Input 1:', input1);
+            // console.log('Input 2:', input2);
+            currentShownTrackIndex = way_index;
+            focusOnTrack(way_index,true);
+            modal.style.display = 'none';
+
+            enableMap();
+        }, { once: true });
+
+        output.innerHTML = input2.value;
+
+        input2.oninput = function() {
+            output.innerHTML = this.value;
+        }
+
+        currentShownTrackIndex = way_index;
+        focusOnTrack(way_index,true);
+    }
+
     
     delete_allowance = false;
     move_allowance = false;
     create_allowance = false;
-    console.log(Points);
+    redact_allowance = false;
+    //console.log(Points);
 }
 
 
@@ -683,12 +839,12 @@ function displayPoints()
 {
 
 
-    console.log(Points);
+//    console.log(Points);
     
     
 
-    console.log("DisplaYPOints");
-    for (let j = 0; j< Points.length; j++){
+    //console.log("DisplaYPOints");
+    for (let j = pointsLength; j< Points.length; j++){
 
         
 
@@ -754,6 +910,8 @@ function displayPoints()
         // pathLayer.addTo(myMap);
         // Markers[j].push(pathLayer);
     }
+
+    pointsLength = Points.length;
     //console.log(Markers);
 }
 
@@ -773,6 +931,7 @@ function addInfoListItem(addIndex){
     buttonChoice.textContent = fileInfoHandle.name;
     buttonChoice.addEventListener("click", function(event) {
         currentShownTrackIndex = addIndex;
+        myMap.flyTo([Points[addIndex][0][1], Points[addIndex][0][0]],7);
         focusOnTrack(addIndex, true);
     });
 
@@ -811,7 +970,7 @@ function addInfoListItem(addIndex){
 
 
 function focusOnTrack(trackIndex, trackType){
-    console.log(trackIndex);
+    //console.log("Focus!");
     geojson_points1 = pointsToGeoJSON(Points[trackIndex], trackType);
         //geojson_points1 = pointsToGeoJSONDeprecated(Points);
     hg.addData(geojson_points1);
@@ -825,7 +984,7 @@ function focusOnTrack(trackIndex, trackType){
 
 function getFileType(fileName) {
     var extension = fileName.split('.').pop().toLowerCase();
-    console.log(extension);
+    //console.log(extension);
     if (extension === 'gpx' || extension === 'kml') {
         return extension;
     } else {
@@ -875,12 +1034,22 @@ function download(index)
 
 function setElevationProfileWidth() {
 
-    
+    const width451 = window.matchMedia('(min-width: 451px)');
+    const width450 = window.matchMedia('(max-width: 450px)');
     let w = window.outerWidth;
     let h = window.outerHeight;
     let txt = "Window size: width=" + w + ", height=" + h;
     //console.log(txt);
     //if (!this.elevation_input.checked) return;
+
+    if (width450.matches) {
+        graph.style.gridColumn = '1 / span 2';
+        graph.style.gridRow = '1 / span 1';
+        hg.resize({ width: hg._width, height: 120 });
+    }else{
+        graph.style.gridColumn = '2 / span 2';
+        graph.style.gridRow = '1 / span 1';
+    }
 
     if (graph) graph.style.display = 'none';
     //this.slide_container.style.display = 'none';
@@ -959,9 +1128,32 @@ let controlDiv = document.querySelector('.leaflet-bottom');
 controlDiv.addEventListener("mouseover", disableMap());
 controlDiv.addEventListener("mouseout", enableMap());
 
-setTimeout(setElevationProfileWidth,100);
+setTimeout(setElevationProfileWidth,250);
         
 
 
 //L.DomEvent.on(controlDiv, 'mouseover', disableMap());
 //L.DomEvent.on(controlDiv, 'mouseout', enableMap());
+
+
+// openModalBtn.addEventListener('click', () => {
+//     // Set default values for input fields
+//     document.getElementById('input1').value = 'Default Value 1';
+//     document.getElementById('input2').value = 'Default Value 2';
+    
+//     modal.style.display = 'block';
+// });
+
+window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+saveBtn.addEventListener('click', () => {
+    const input1 = document.getElementById('input1').value;
+    const input2 = document.getElementById('input2').value;
+    console.log('Input 1:', input1);
+    console.log('Input 2:', input2);
+    modal.style.display = 'none';
+});
