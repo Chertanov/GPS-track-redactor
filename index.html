@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <!--<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>-->
+
+    <script src="
+    https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js
+    "></script>
+    <link href="
+    https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css
+    " rel="stylesheet">
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+
+    <script src="
+    https://cdn.jsdelivr.net/npm/leaflet.heightgraph@1.4.0/dist/L.Control.Heightgraph.min.js
+    "></script>
+    <link href="
+    https://cdn.jsdelivr.net/npm/leaflet.heightgraph@1.4.0/dist/L.Control.Heightgraph.min.css
+    " rel="stylesheet">
+
+
+    <link rel="stylesheet" href="./src/css/style.css">
+
+    <script src="https://unpkg.com/@turf/turf@6.3.0/turf.min.js"></script>
+    
+
+
+    <!-- <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.6.1.min.js"></script> -->
+
+
+    <script src="https://kit.fontawesome.com/33cfd31e1b.js" crossorigin="anonymous"></script>
+
+    <script src="
+    https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.js
+    "></script>
+    <link href="
+    https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.css
+    " rel="stylesheet">
+    <title>Document</title>
+</head>
+<body onresize="setElevationProfileWidth()">
+    
+    
+    <div id="map">
+
+       
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Input Form</h2>
+                <label for="input1">Input 1:</label>
+                <input type="number" min="1" max="8999" id="input1">
+                <br><br>
+                <div id="timeRedact">
+                <label for="input2">Input 2:</label>
+                <input type="range" id="input2">
+                <div class="output">
+                    Value: <span id="valueDisplay"></span>
+                </div>
+                </div>
+                <br><br>
+                <button id="saveBtn">Save</button>
+            </div>
+        </div>
+
+
+        <div id="timeModal" class="time-modal">
+            <div class="time-modal-content">
+                <span class="time-close">&times;</span>
+                <h2>Input Form</h2>
+                <label for="time-input1">Input 1:</label>
+                <input type="text" id="datepicker">
+                <br><br>
+
+                <label for="timeSelect">Выберите время:</label>
+                <select id="timeSelect">
+                </select>
+                
+                <br><br>
+                <button id="saveTimeBtn">Save</button>
+            </div>
+        </div>
+    
+
+
+        
+        <div class="leaflet-bottom leaflet-left" onmouseover="disableMap()" onmouseout="enableMap()">
+            <div id="track-info" class="leaflet-control">
+                <div id="information-grid" class="panels-container trace-info maximized" style>
+                        <div id="track-list">
+                            
+                            <div class="scrollable-list">
+                                <ul id="infoList">
+                                    <li>
+                                        <button class="button-main">Very Long Button Text</button>
+                                        <div class="button-group">
+                                            <button class="button-secondary"><i class="fas fa-save"></i></button>
+                                            <button class="button-secondary"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <button class="button-main">Short Text</button>
+                                        <div class="button-group">
+                                            <button class="button-secondary"><i class="fas fa-save"></i></button>
+                                            <button class="button-secondary"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <button class="button-main">Another Long Text</button>
+                                        <div class="button-group">
+                                            <button class="button-secondary"><i class="fas fa-save"></i></button>
+                                            <button class="button-secondary"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    
+
+
+
+
+    
+    <div >
+        <button onclick="clearMap()">Delete</button>
+    </div>
+    <div>
+        <select name="file_names" id="files">
+
+        </select>
+        <button onclick="clearFile()">Remove file</button>
+        <button onclick="save()">Save files</button>
+        <p id = "debug_info">Temporal placefolder</p>
+    </div>
+
+
+    <script src="./src/js/index.js"></script>
+
+
+    
+    
+</body>
+</html>
