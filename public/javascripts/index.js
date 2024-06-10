@@ -31,6 +31,10 @@ const modal = document.getElementById('myModal');
 const closeModalSpan = document.querySelector('.close');
 const saveBtn = document.getElementById('saveBtn');
 
+const timeModal = document.getElementById('timeModal');
+const closeTimeModalSpan = document.querySelector('.time-close');
+const saveTimeBtn = document.getElementById('saveTimeBtn');
+
 
 
 document.querySelector('.scrollable-list').addEventListener('wheel', function(event) {
@@ -136,7 +140,7 @@ const colorMappings = {
             color: '#E07575'
         },
         '3': {
-            text: '7-9%',
+            text: ' ',
             color: '#52CF53'
         },
         '4': {
@@ -262,7 +266,7 @@ deleteIcon.className = "fas fa-trash";
 let uploadIcon = document.createElement("span");
 uploadIcon.className = "fas fa-upload";
 let locationIcon = document.createElement("span");
-locationIcon.className = "fas fa-crosshairs";
+locationIcon.className = "fas fa-search";
 let redactIcon = document.createElement("span");
 redactIcon.className = "fas fa-marker";
 
@@ -287,7 +291,9 @@ moveMarkerElement.addEventListener("click",moveMarker);
 deleteMarkerElement.addEventListener("click",deleteMarker);
 createMarkerElement.addEventListener("click",createMarker);
 inputFileElement.addEventListener("click",clickDonwloadFile);
-currentLocationElement.addEventListener("click",getCurrentPosition);
+currentLocationElement.addEventListener("click",function(event) {
+    findTimeMarker(currentShownTrackIndex);
+});
 changeMiscInfoElement.addEventListener("click", redactMarker);
 
 moveMarkerElement.appendChild(changeIcon);
@@ -307,7 +313,7 @@ inputElement.accept=".gpx,.kml";
 inputElement.multiple="multiple";
 
 
-const buttonsList = [currentLocationElement,moveMarkerElement, createMarkerElement, changeMiscInfoElement, deleteMarkerElement, inputFileElement, inputElement,];
+const buttonsList = [currentLocationElement, moveMarkerElement, createMarkerElement, changeMiscInfoElement, deleteMarkerElement, inputFileElement, inputElement];
 
 
 
@@ -931,8 +937,11 @@ function addInfoListItem(addIndex){
     buttonChoice.textContent = fileInfoHandle.name;
     buttonChoice.addEventListener("click", function(event) {
         currentShownTrackIndex = addIndex;
-        myMap.flyTo([Points[addIndex][0][1], Points[addIndex][0][0]],7);
+        myMap.flyTo([Points[addIndex][0][1], Points[addIndex][0][0]],10);
         focusOnTrack(addIndex, true);
+        for (var i = 0; i < Markers[currentShownTrackIndex].length - 1; i++) {
+            Markers[currentShownTrackIndex][i].setOpacity(1);
+        }
     });
 
     let divPointItemButtons = document.createElement("div");
@@ -1150,10 +1159,245 @@ window.addEventListener('click', (event) => {
     }
 });
 
-saveBtn.addEventListener('click', () => {
-    const input1 = document.getElementById('input1').value;
-    const input2 = document.getElementById('input2').value;
-    console.log('Input 1:', input1);
-    console.log('Input 2:', input2);
-    modal.style.display = 'none';
-});
+// saveBtn.addEventListener('click', () => {
+//     const input1 = document.getElementById('input1').value;
+//     const input2 = document.getElementById('input2').value;
+//     console.log('Input 1:', input1);
+//     console.log('Input 2:', input2);
+//     modal.style.display = 'none';
+// });
+
+
+function getUniqueDaysFromTimestamps(timestamps) {
+    const daysSet = new Set();
+
+    timestamps.forEach(seconds => {
+        // Convert seconds to milliseconds (Date constructor requires milliseconds)
+        const date = new Date(seconds * 1000);
+        
+        // Extract the year, month, and day
+        const year = date.getUTCFullYear();
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+        const day = date.getUTCDate().toString().padStart(2, '0');
+        
+        // Create a string in the format 'YYYY-MM-DD'
+        const dayString = `${year}-${month}-${day}`;
+        
+        // Add the day string to the set
+        daysSet.add(dayString);
+    });
+
+    return daysSet;
+}
+
+
+function convertTimestamps(timestamps) {
+    const result = {};
+  
+    timestamps.forEach(ts => {
+      const date = new Date(ts * 1000);
+      const dateString = date.toISOString().split('T')[0];
+      const timeString = date.toISOString().split('T')[1].slice(0, 8);
+  
+      if (!result[dateString]) {
+        result[dateString] = [];
+      }
+      result[dateString].push(timeString);
+    });
+  
+    return result;
+}
+
+
+function addOptions(selectElement, options) {
+    // Удаляем все текущие опции
+    while (selectElement.firstChild) {
+        selectElement.removeChild(selectElement.firstChild);
+    }
+    // Добавляем новые опции
+    options.forEach(function(optionText) {
+        var option = document.createElement('option');
+        option.value = optionText;
+        option.textContent = optionText;
+        selectElement.appendChild(option);
+    });
+}
+
+
+function findTimeMarker(trackIndex){
+
+    disableMap();
+    //document.getElementById('input1').value = Points[way_index][element_index][2];
+    
+    //document.getElementById('input2').value = 'Default Value 2';
+    //Points[way_index][element_index];
+    var points_time_list = Points[trackIndex];
+
+    var dateSelect = document.getElementById('datepicker');
+
+    var selectedDate = dateSelect.value;
+
+    const fourthElements = points_time_list.map(subArray => subArray[3]);
+
+    //console.log(fourthElements);
+
+    const uniqueDays = getUniqueDaysFromTimestamps(fourthElements);
+
+    const uniqueDaysArray = Array.from(uniqueDays);
+
+    const dateTimes = convertTimestamps(fourthElements);
+    //console.log(converted);
+
+    function available(date) {
+        var dateString = $.datepicker.formatDate('yy-mm-dd', date);
+        return [uniqueDaysArray.includes(dateString)];
+    }
+
+    var defaultDate = uniqueDaysArray[0];
+
+    $("#datepicker").datepicker({
+        beforeShowDay: available,
+        dateFormat: 'yy-mm-dd',
+        defaultDate: defaultDate,
+        onSelect: function(dateText) {
+            selectedDate = dateText; // Save selected date to variable
+            //console.log("Selected date: " + selectedDate);
+            // You can do whatever you want with the selected date here
+        }
+    });
+
+
+    var dateSelect = document.getElementById('datepicker');
+    var timeSelect = document.getElementById('timeSelect');
+    dateSelect.addEventListener('mouseout', function() {
+        //var selectedDate = dateSelect.value;
+        console.log(dateTimes);
+        console.log(dateTimes[selectedDate]);
+        addOptions(timeSelect, dateTimes[selectedDate] || []);
+    });
+
+    // Инициализация времени для первой даты по умолчанию
+    //addOptions(timeSelect, dateTimes[dateSelect.value]);
+
+
+    timeModal.style.display = 'block';
+
+    closeTimeModalSpan.addEventListener('click', () => {
+        timeModal.style.display = 'none';
+        enableMap();
+    }, { once: true });
+
+    timeModal.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent the click event from propagating to the window
+    });
+
+
+    saveTimeBtn.addEventListener('click', () => {
+        const hours_value = timeSelect.value;
+        const selectedTotalTime = selectedDate+"T"+hours_value+"Z";
+        console.log(selectedTotalTime);
+
+        var time = new Date(selectedTotalTime).getTime() / 1000;
+        console.log(time);
+
+        var timeIndex = fourthElements.findIndex((timestamp_item)=> timestamp_item === time);
+        //console.log(fourthElements);
+        console.log(timeIndex);
+
+        console.log(Markers[trackIndex][timeIndex]);
+        console.log(Points[trackIndex][timeIndex]);
+
+        for (var i = 0; i < Markers[trackIndex].length - 1; i++) {
+            Markers[trackIndex][i].setOpacity(0);
+        }
+
+        
+
+        Markers[trackIndex][timeIndex].setOpacity(1);
+
+        myMap.flyTo([Points[trackIndex][timeIndex][1], Points[trackIndex][timeIndex][0]],17);
+        
+        //const input2 = document.getElementById('input2').value;
+
+        // Points[way_index][element_index][2] = input1;
+
+        // if (PointsVariant[way_index] == 1){
+        //     Points[way_index][element_index][3] = input2;
+        // }
+
+        // // console.log('Input 1:', input1);
+        // // console.log('Input 2:', input2);
+        // currentShownTrackIndex = way_index;
+        //focusOnTrack(way_index,true);
+        timeModal.style.display = 'none';
+
+        enableMap();
+    }, { once: true });
+
+    //console.log(uniqueDaysArray);
+    
+    /*const output = document.getElementById('valueDisplay');
+
+    var input2 = 0;
+    if (PointsVariant[way_index] == 1){
+
+        input2 = document.getElementById('input2');
+
+        if (element_index === 0){
+            input2.min = Points[way_index][element_index][3]-500; // Set minimum value
+        }else {
+            input2.min = Points[way_index][element_index-1][3]+1;
+        }
+
+
+        if (element_index === Points[way_index].length-1){
+            input2.max = Points[way_index][element_index][3]+500;
+        }else {
+            input2.max = Points[way_index][element_index+1][3]-1;
+        }
+
+
+        //input2.max = Points[way_index][element_index+1][3]-1; // Set maximum value
+        input2.value = Points[way_index][element_index][3]; // Set default value
+    }}
+
+    modal.style.display = 'block';
+
+    closeModalSpan.addEventListener('click', () => {
+        modal.style.display = 'none';
+        enableMap();
+    }, { once: true });
+
+    modal.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent the click event from propagating to the window
+    });
+    
+
+    saveBtn.addEventListener('click', () => {
+        const input1 = document.getElementById('input1').value;
+        const input2 = document.getElementById('input2').value;
+
+        Points[way_index][element_index][2] = input1;
+
+        if (PointsVariant[way_index] == 1){
+            Points[way_index][element_index][3] = input2;
+        }
+
+        // console.log('Input 1:', input1);
+        // console.log('Input 2:', input2);
+        currentShownTrackIndex = way_index;
+        focusOnTrack(way_index,true);
+        modal.style.display = 'none';
+
+        enableMap();
+    }, { once: true });
+
+    output.innerHTML = input2.value;
+
+    input2.oninput = function() {
+        output.innerHTML = this.value;
+    }
+
+    currentShownTrackIndex = way_index;
+    focusOnTrack(way_index,true);
+*/}

@@ -14,6 +14,10 @@
     https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css
     " rel="stylesheet">
 
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
 
     <script src="
     https://cdn.jsdelivr.net/npm/leaflet.heightgraph@1.4.0/dist/L.Control.Heightgraph.min.js
@@ -28,8 +32,8 @@
     
 
 
-    <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
-    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.6.1.min.js"></script>
+    <!-- <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-base.min.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.6.1.min.js"></script> -->
 
 
     <script src="https://kit.fontawesome.com/33cfd31e1b.js" crossorigin="anonymous"></script>
@@ -76,6 +80,30 @@
                 </div>
                 <br><br>
                 <button id="saveBtn">Save</button>
+            </div>
+        </div>
+
+
+        <div id="timeModal" class="time-modal">
+            <div class="time-modal-content">
+                <span class="time-close">&times;</span>
+                <h2>Input Form</h2>
+                <label for="time-input1">Input 1:</label>
+                <input type="text" id="datepicker">
+                <br><br>
+
+                <label for="timeSelect">Выберите время:</label>
+                <select id="timeSelect">
+                </select>
+                <!-- <div id="timeRedact">
+                <label for="input2">Input 2:</label>
+                <input type="range" id="input2">
+                <div class="output">
+                    Value: <span id="valueDisplay"></span>
+                </div>
+                </div> -->
+                <br><br>
+                <button id="saveTimeBtn">Save</button>
             </div>
         </div>
     
