@@ -338,68 +338,13 @@ function clickDonwloadFile(){
 }
 
 
-//appendChild(deleteMarker).appendChild(createMarker);
-// $(document).ready(function(){
-//     $('input[name="map_file"]').change(function(input){
-//         var file = input.target.files[0];
-//         Points = [];
-//         var reader = new FileReader();
-//         console.log("123");
 
-//         reader.onload = function(e) {
-//             var xmlString = e.target.result;
-//             console.log("pretype");
-//             var fileType = getFileType(file.name);
-//             console.log('posttype');
-//             var parser = new DOMParser();
-//             var xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-    
-//             if (fileType === 'gpx') {
-//                 var trkptElements = xmlDoc.getElementsByTagName('trkpt');
-//                 //Points = new Array(trkptElements.length);
-//                 for (var i = 0; i < trkptElements.length; i++) {
-//                     var trkpt = trkptElements[i];
-//                     var lat = trkpt.getAttribute('lat');
-//                     var lon = trkpt.getAttribute('lon');
-//                     Points.push([Number(lon),Number(lat)]);
-//                     //console.log([Number(lon),Number(lat)]);
-//                     //console.log('Latitude:', lat, 'Longitude:', lon);
-//                     // You can process each trkpt element here
-//                 }
-//             } else if (fileType === 'kml') {
-//                 var coordinates = xmlDoc.getElementsByTagName('coordinates');
-//                 //Points = new Array(coordinates.length);
-//                 for (var i = 0; i < coordinates.length; i++) {
-//                     var coordText = coordinates[i].textContent.trim();
-//                     var coordPairs = coordText.split(/\s+/);
-//                     for (var j = 0; j < coordPairs.length; j++) {
-//                         var parts = coordPairs[j].split(',');
-//                         var lon = parseFloat(parts[0]);
-//                         var lat = parseFloat(parts[1]);
-//                         Points.push([Number(lon),Number(lat)]);
-//                         //console.log('Latitude:', lat, 'Longitude:', lon);
-//                         // You can process each coordinate here
-//                     }
-//                 }
-//             } else {
-//                 console.error('Unsupported file type');
-//             }
-//             displayPoints();
-//             //download(xmlDoc);
-//         };
-        
-    
-//         reader.readAsText(file);
-
-        
-//     });
-// });
 
 let fileQueue = [];
 
 function addToQueue(files) {
     fileQueue.push(...files);
-    processQueue();
+    processFileQueue();
     
 }
 
@@ -407,13 +352,11 @@ function addToQueue(files) {
 let readingInProgress = false;
 
 
-function processQueue() {
-    // If there are files in the queue and FileReader is not busy
+function processFileQueue() {
     if (fileQueue.length > 0) {
         if (!readingInProgress) {
-            // Start reading the next file
             const file = fileQueue.shift();
-            readFile(file);
+            readTrackFile(file);
         }
     }else{
         displayPoints();
@@ -421,7 +364,73 @@ function processQueue() {
 }
 
 
-function readFile(file){//solve issues with cancelling uploading gp(s) files
+function readGPXFile(xmlDoc){
+    var pointsFromFile = [];
+    var trackVariant = 0;
+
+    var trkptElements = xmlDoc.getElementsByTagName('trkpt');
+    for (var i = 0; i < trkptElements.length; i++) {
+        var trkpt = trkptElements[i];
+        if (i == 0){
+            try {
+                var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
+                trackVariant = 1;
+            }
+            catch{};
+        };
+
+        var lat = trkpt.getAttribute('lat');
+        var lon = trkpt.getAttribute('lon');
+        var ele = trkpt.querySelector('ele').textContent;
+
+        if (trackVariant) {
+            var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
+            pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(time)]);
+        }
+        else {
+            pointsFromFile.push([Number(lon),Number(lat),Number(ele)]);
+        }
+    }
+    return [pointsFromFile, trackVariant];
+}
+
+
+
+function readKMLFile(xmlDoc){
+    var pointsFromFile = [];
+    var trackVariant = 0;
+    var timeCoordinates;
+
+    try{
+        timeCoordinates = xmlDoc.getElementsByTagName('when');
+        var time = new Date(timeCoordinates[0].textContent).getTime() / 1000;
+        trackVariant = 1;
+    } catch{};
+
+    var lineCoordinates = xmlDoc.getElementsByTagName('LineString')[0];
+    var coordinates = lineCoordinates.getElementsByTagName('coordinates');
+    
+    for (var i = 0; i < coordinates.length; i++) {
+        var coordText = coordinates[i].textContent.trim();
+        var coordPairs = coordText.split(/\s+/);
+        for (var j = 0; j < coordPairs.length; j++) {
+            var parts = coordPairs[j].split(',');
+            var lon = parseFloat(parts[0]);
+            var lat = parseFloat(parts[1]);
+            var ele = parseFloat(parts[2]);
+            if (trackVariant) {
+                var time = new Date(timeCoordinates[j].textContent).getTime() / 1000;
+                pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(time)]);
+            }else{
+                pointsFromFile.push([Number(lon),Number(lat),Number(ele)]);
+            }
+        }
+    }
+    return [pointsFromFile, trackVariant];    
+}
+
+
+function readTrackFile(file){
     fileList.push(file);
     addInfoListItem(fileList.length-1);
     var reader = new FileReader();
@@ -429,84 +438,34 @@ function readFile(file){//solve issues with cancelling uploading gp(s) files
 
     reader.onload = function(e) {
         var xmlString = e.target.result;
-        //console.log("pretype");
         var fileType = getFileType(file.name);
-        //console.log('posttype');
-        var Points_file = [];
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-        xmlDoc_list.push(xmlDoc);
-        console.log(xmlDoc_list);
+         var fileCoordinatesInfo;
 
+        xmlDoc_list.push(xmlDoc);
         select = document.getElementById("files");
-        
         var opt = document.createElement('option');
+
         opt.value = Points.length;
         opt.innerHTML = Points.length;
-
         select.appendChild(opt);
-
-        var trackVariant = 0;
-
+       
         if (fileType === 'gpx') {
-            var trkptElements = xmlDoc.getElementsByTagName('trkpt');
-            for (var i = 0; i < trkptElements.length; i++) {
-                var trkpt = trkptElements[i];
-                if (i == 0){
-                    try {
-                        var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
-                        trackVariant = 1;
-                    }
-                    catch{};
-                };
-
-                var lat = trkpt.getAttribute('lat');
-                var lon = trkpt.getAttribute('lon');
-                var ele = trkpt.querySelector('ele').textContent;
-                if (trackVariant) {
-                    var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
-                    
-                    Points_file.push([Number(lon),Number(lat),Number(ele), Number(time)]);
-                }
-                else {
-                    Points_file.push([Number(lon),Number(lat),Number(ele)]);
-                }
-                
-                //console.log([Number(lon),Number(lat)]);
-                //console.log('Latitude:', lat, 'Longitude:', lon);
-                // You can process each trkpt element here
-            }
+            fileCoordinatesInfo = readGPXFile(xmlDoc);
         } else if (fileType === 'kml') {
-            var coordinates = xmlDoc.getElementsByTagName('coordinates');
-            //Points = new Array(coordinates.length);
-            for (var i = 0; i < coordinates.length; i++) {
-                var coordText = coordinates[i].textContent.trim();
-                var coordPairs = coordText.split(/\s+/);
-                for (var j = 0; j < coordPairs.length; j++) {
-                    var parts = coordPairs[j].split(',');//<----------need to change elevation for KML as well
-                    var lon = parseFloat(parts[0]);
-                    var lat = parseFloat(parts[1]);
-                    var ele = parseFloat(parts[2]);
-                    Points_file.push([Number(lon),Number(lat),Number(ele)]);
-                    //console.log('Latitude:', lat, 'Longitude:', lon);
-                    // You can process each coordinate here
-                }
-            }
+            fileCoordinatesInfo = readKMLFile(xmlDoc);
         } else {
             console.error('Unsupported file type');
         }
-        Points.push(Points_file);
-        console.log("TrackType: "+trackVariant);
-        PointsVariant.push(trackVariant);
+        
+        Points.push(fileCoordinatesInfo[0]);
+        PointsVariant.push(fileCoordinatesInfo[1]);
 
-        //displayPoints();
         readingInProgress = false;
-        processQueue();
+        processFileQueue();
     };
-
-    
     reader.readAsText(file);
-
 }
 
 
@@ -843,18 +802,9 @@ function markerClick(e){
 
 function displayPoints()
 {
-
-
-//    console.log(Points);
-    
-    
-
-    //console.log("DisplaYPOints");
     for (let j = pointsLength; j< Points.length; j++){
-
-        
-
         Markers.push([]);
+        
         for (let i = 0; i < Points[j].length; i++)
         {
             
@@ -864,61 +814,10 @@ function displayPoints()
             marker.on('click', markerClick); //must be altered to make all markers draggable if clicked change position of markers, and define item alias for certain ways
             
         }
-
-
-        // let geojson_markers = markersToGeoJSON(Markers[0]);
-
-
-        // const geojson2 = [{
-        //     "type": "FeatureCollection",
-        //     "features": [{
-        //         "type": "Feature",
-        //         "geometry": {
-        //             "type": "LineString",
-        //             "coordinates": [
-        //                 [8.6865264, 49.3859188, 114.5],
-        //                 [8.6864108, 49.3868472, 114.3],
-        //                 [8.6860538, 49.3903808, 114.8]
-        //             ]
-        //         },
-        //         "properties": {
-        //             "attributeType": "3"
-        //         }
-        //     }, {
-        //         "type": "Feature",
-        //         "geometry": {
-        //             "type": "LineString",
-        //             "coordinates": [
-        //                 [8.6860538, 49.3903808, 114.8],
-        //                 [8.6857921, 49.3936309, 114.4],
-        //                 [8.6860124, 49.3936431, 114.3]
-        //             ]
-        //         },
-        //         "properties": {
-        //             "attributeType": "0"
-        //         }
-        //     }],
-        //     "properties": {
-        //         "Creator": "OpenRouteService.org",
-        //         "records": 2,
-        //         "summary": "steepness"
-        //     }
-        // }]
-
-        
-        
-    //     hg.addData(geojson2);
-    //     L.geoJson(geojson_markers).addTo(map);
-
         reloadPath(j);
-        // let path = turf.lineString(Points[j]);
-        // pathLayer = L.geoJSON(path);
-        // pathLayer.addTo(myMap);
-        // Markers[j].push(pathLayer);
     }
 
     pointsLength = Points.length;
-    //console.log(Markers);
 }
 
 
