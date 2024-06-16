@@ -16,7 +16,7 @@ input[type="file"] {
 #map {
     left: 0px;
     right: 0px;
-    height: 90%;
+    height: 100%;
     position: absolute;
 }
 
@@ -80,14 +80,6 @@ a {
   text-align: center;
 }
 
-.trace-info {
-  width: 100%;
-  display: grid;
-  grid-gap: 0px 0px;
-  justify-items: center;
-  align-items: center;
-  grid-auto-rows: min-content;
-}
 
 .trace-info {
   width: 100vw;
@@ -99,7 +91,7 @@ a {
 }
 
 .scrollable-list {
-  max-height: 150px; /* Set the height you want */
+  max-height: 200px; /* Set the height you want */
   overflow-y: auto;  /* Enable vertical scrolling */
   padding: 5px;
 }
@@ -228,16 +220,19 @@ a {
 
 @media (min-width: 451px){
   #height-length{
+
     grid-row: 2 / span 1;
     grid-column: 2 / span 1;
   }
 
   #height-time{
+
     grid-row: 2 / span 1;
     grid-column: 3 / span 1;
   }
 
   #track-list{
+   
     grid-column: 1 / span 1;
     grid-row: 1 / span 2;
   }
@@ -245,8 +240,8 @@ a {
 
 @media (max-width: 450px){
   #height-length{
-    grid-row: 3 / span 1;
-    grid-column: 1 / span 1;
+    grid-row: 2 / span 1;
+    grid-column: 2 / span 1;
   }
 
   #height-time{
@@ -255,8 +250,11 @@ a {
   }
 
   #track-list{
-    grid-column: 1 / span 2;
-    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
+    grid-row: 2 / span 2;
+  }
+  .scrollable-list {
+    max-height: 90px; /* Set the height you want */
   }
 }
 
@@ -335,4 +333,9 @@ a {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.faded {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

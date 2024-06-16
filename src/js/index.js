@@ -1,18 +1,8 @@
-// xmlDoc(s) must be saved as array to work properly in save() and download() functions
-// 
-// 
-// 
-// 
-
-  
-//import L from "leaflet";
-
-
-
 var Points = [];
 var pointsLength = Points.length;
 var PointsVariant = [];
 var Markers = [];
+var selectedOperation = -1;// 0 - move marker; 1 - create marker; 2 - delete marker; 3 - redact marker
 var delete_allowance = false;
 var move_allowance = false;
 var create_allowance = false;
@@ -20,14 +10,12 @@ var redact_allowance = false;
 var currentShownTrackIndex = null;
 var fileList = []
 var xmlDoc_list = [];
-//var currentPositionhandle = window.navigator;
 var currentPosition = [];
 var debug_info_handle = document.getElementById("debug_info");
 
 
 
 const modal = document.getElementById('myModal');
-//const openModalBtn = document.getElementById('openModalBtn');
 const closeModalSpan = document.querySelector('.close');
 const saveBtn = document.getElementById('saveBtn');
 
@@ -47,32 +35,8 @@ document.querySelector('.scrollable-list').addEventListener('wheel', function(ev
     }
 });
 
-// function setCurrentPosition(success){
-//     currentPosition = [success.coords.latitude, success.coords.longitude]
-// }
-
-// currentPositionhandle.geolocation.getCurrentPosition(setCurrentPosition);
-//console.log(currentPosition);
-//console.log(currentPosition);
-
-
-
-
-
 
 function getCurrentPosition(){
-
-    // currentPositionhandle.geolocation.getCurrentPosition(function (success){
-    //     debug_info_handle.innerHTML = "OK";
-    //     currentPosition = [success.coords.latitude, success.coords.longitude]
-    //     console.log(currentPosition);
-    //     var marker = L.marker(currentPosition).addTo(myMap);
-    // },
-    // function (error){
-    //     alert(error.message);
-    //     debug_info_handle.innerHTML = error.message;
-    // });
-
     navigator.geolocation.getCurrentPosition(
         function(success) {
             debug_info_handle.innerHTML = "OK";
@@ -181,23 +145,17 @@ destination.appendChild(graph);
 
 
 let changeToHeightToLength = document.createElement("button");
-changeToHeightToLength.className = "change-button leaflet-control";
+changeToHeightToLength.className = "btn btn-outline-dark change-button leaflet-control";
 changeToHeightToLength.id = "height-length";
-// changeToHeightToLength.style.gridColumn = '2 / span 1';
-// changeToHeightToLength.gridRow = '2 / span 1';
 changeToHeightToLength.textContent = "Change to Height/Length graph";
 changeToHeightToLength.addEventListener("click", function(event) {
     focusOnTrack(currentShownTrackIndex, true);
 });
 
-//moveMarkerElement.className = "";
-//moveMarkerElement.addEventListener("click",moveMarker);
 
 let changeToHeightToTime = document.createElement("button");
-changeToHeightToTime.className = "change-button";
+changeToHeightToTime.className = "btn btn-outline-dark change-button";
 changeToHeightToTime.id = "height-time";
-// changeToHeightToTime.style.gridColumn = '3 / span 1';
-// changeToHeightToTime.gridRow = '2 / span 1';
 changeToHeightToTime.textContent = "Change to Height/Time graph";
 changeToHeightToTime.addEventListener("click", function(event) {
     focusOnTrack(currentShownTrackIndex, false);
@@ -205,6 +163,12 @@ changeToHeightToTime.addEventListener("click", function(event) {
 
 destination.appendChild(changeToHeightToLength);
 destination.appendChild(changeToHeightToTime);
+
+
+changeToHeightToLength.disabled = true;
+changeToHeightToLength.classList.add('faded');
+changeToHeightToTime.disabled = true;
+changeToHeightToTime.classList.add('faded');
 
 
 const geojson2 = [{
@@ -231,28 +195,6 @@ const geojson2 = [{
 
 hg.addData(geojson2);
 
-
-
-
-// let locateControl = L.control.locate({
-//     position: 'topright',  // Position of the locate control
-//     setView: 'once',       // Automatically sets the map view (options: 'once', 'always', false)
-//     keepCurrentZoomLevel: true,
-//     strings: {
-//         title: "Show current position",  // Title of the locate button
-
-//     }
-// });
-// locateControl.addTo(myMap);
-
-
-// let locateControlElements = document.getElementsByClassName("leaflet-control-locate-location-arrow");
-// ;
-// for (var i = 0; i < locateControlElements.length; i++) {
-//     locateControlElements[i].classList.add("fas");
-//     locateControlElements[i].classList.add("fa-crosshairs");
-//     locateControlElements[i].classList.remove("leaflet-control-locate-location-arrow");
-// }
 
 let rightTopPanel = document.getElementsByClassName("leaflet-top leaflet-right")[0];
 
@@ -287,19 +229,25 @@ inputFileElement.className = "leaflet-bar-part leaflet-bar-part-single";
 currentLocationElement.className = "leaflet-bar-part leaflet-bar-part-single";
 changeMiscInfoElement.className = "leaflet-bar-part leaflet-bar-part-single";
 
-moveMarkerElement.addEventListener("click",moveMarker);
-deleteMarkerElement.addEventListener("click",deleteMarker);
-createMarkerElement.addEventListener("click",createMarker);
+moveMarkerElement.addEventListener("click", function(event) {
+    selectedOperation = 0;
+});
+deleteMarkerElement.addEventListener("click", function(event) {
+    selectedOperation = 2;
+});
+createMarkerElement.addEventListener("click", function(event) {
+    selectedOperation = 1;
+});
 inputFileElement.addEventListener("click",clickDonwloadFile);
 currentLocationElement.addEventListener("click",function(event) {
     findTimeMarker(currentShownTrackIndex);
 });
-changeMiscInfoElement.addEventListener("click", redactMarker);
-
+changeMiscInfoElement.addEventListener("click", function(event) {
+    selectedOperation = 3;
+});
 moveMarkerElement.appendChild(changeIcon);
 deleteMarkerElement.appendChild(deleteIcon);
 createMarkerElement.appendChild(markerIcon);
-//createMarkerElement.textContent = "Create Marker";
 inputFileElement.appendChild(uploadIcon);
 currentLocationElement.appendChild(locationIcon);
 changeMiscInfoElement.appendChild(redactIcon);
@@ -329,8 +277,10 @@ for (var i = 0; i < divBarElementsList.length; i++) {
     rightTopPanel.appendChild( divBarElementsList[i]);
 }
 
+changeButtonsAvailability(false);
+
 divBarElementsList = [];
-console.log(divBarElementsList)
+//console.log(divBarElementsList)
 
 
 function clickDonwloadFile(){
@@ -359,6 +309,7 @@ function processFileQueue() {
             readTrackFile(file);
         }
     }else{
+        changeButtonsAvailability(true);
         displayPoints();
     }
 }
@@ -516,35 +467,37 @@ function showWayPoint(location)
 }
 
 
-function deleteMarker(){
-    delete_allowance = true;
-    move_allowance = false;
-    create_allowance = false;
-    redact_allowance = false;
-}
 
 
-function moveMarker(){
-    delete_allowance = false;
-    move_allowance = true;
-    create_allowance = false;
-    redact_allowance = false;
-}
+// function deleteMarker(){
+//     delete_allowance = true;
+//     move_allowance = false;
+//     create_allowance = false;
+//     redact_allowance = false;
+// }
 
 
-function createMarker(){
-    delete_allowance = false;
-    move_allowance = false;
-    create_allowance = true;
-    redact_allowance = false;
-}
+// function moveMarker(){
+//     delete_allowance = false;
+//     move_allowance = true;
+//     create_allowance = false;
+//     redact_allowance = false;
+// }
 
-function redactMarker(){
-    delete_allowance = false;
-    move_allowance = false;
-    create_allowance = false;
-    redact_allowance = true;
-}
+
+// function createMarker(){
+//     delete_allowance = false;
+//     move_allowance = false;
+//     create_allowance = true;
+//     redact_allowance = false;
+// }
+
+// function redactMarker(){
+//     delete_allowance = false;
+//     move_allowance = false;
+//     create_allowance = false;
+//     redact_allowance = true;
+// }
 
 
 function reloadPath(points_index){
@@ -555,7 +508,7 @@ function reloadPath(points_index){
 }
 
 
-function pointsToGeoJSON(points_list, type) { //need to be changed to make proper GeoJson
+function pointsToGeoJSON(points_list, type) {
     let geojson = null;
 
     if (type){
@@ -570,20 +523,14 @@ function pointsToGeoJSON(points_list, type) { //need to be changed to make prope
           properties: {"attributeType": "3"}
         }],
       properties: {
-                "Creator": "OpenRouteService.org",
+                "Creator": "GPS-Track-Redactor",
                 "records": 1,
                 "summary": "steepness"
             }
     }];
-
-
-    }
-    else{
-
+    } else{
         const fourthElements = points_list.map(subArray => subArray[3]);
-        //console.log(fourthElements);
         let minTimeValue = fourthElements.reduce((acc, current) => Math.min(acc, current));
-        //console.log(minTimeValue);
 
        geojson = [{
       type: "FeatureCollection",
@@ -596,19 +543,153 @@ function pointsToGeoJSON(points_list, type) { //need to be changed to make prope
           properties: {"attributeType": "3"}
         }],
       properties: {
-                "Creator": "OpenRouteService.org",
+                "Creator": "GPS-Track-Redactor",
                 "records": 1,
                 "summary": "steepness"
             }
     }]; 
+    };
 
-
-
-    }
-    // console.log("Type and Geojson:");
-    // console.log(type);
-    // console.log(geojson);
     return geojson;
+}
+
+
+function moveMarkerOperation(clicked_marker, way_index, element_index){
+    currentShownTrackIndex = way_index;
+        focusOnTrack(way_index,true);
+        clicked_marker.dragging.enable();
+        clicked_marker.on("moveend",function(e){
+            way_line = Markers[way_index].pop();
+            myMap.removeLayer(way_line);
+            e.target.dragging.disable();
+
+            var temp = e.target;
+
+            if (PointsVariant[way_index] == 1){
+                Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat'],Points[way_index][element_index][2], Points[way_index][element_index][3]]);
+            }else{
+
+                Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat'],Points[way_index][element_index][2]]);
+            };
+            
+            Markers[way_index].splice(element_index,1,temp);
+
+            reloadPath(way_index);
+            currentShownTrackIndex = way_index;
+            focusOnTrack(way_index,true);
+        });
+}
+
+
+function createMarkerOperation(clicked_marker, way_index, element_index){
+    myMap.once('click', function(e){
+        way_line = Markers[way_index].pop();
+        myMap.removeLayer(way_line);
+        var temp = [e.latlng['lng'],e.latlng['lat']];
+        Points[way_index].splice(element_index+1,0,temp);
+        var marker_t = showWayPoint(temp);
+        var heightNewMarker = 0
+        try {
+            heightNewMarker = (Points[way_index][element_index+2][2] + Points[way_index][element_index][2]) / 2;
+        }catch{
+            heightNewMarker = Points[way_index][element_index][2];
+        }
+
+        if (PointsVariant[way_index] == 1){
+            var timeNewMarker = 0;
+            try{
+                timeNewMarker = Math.round((Points[way_index][element_index+2][3] + Points[way_index][element_index][3]) / 2);
+            }catch{
+                timeNewMarker = Points[way_index][element_index][3];
+            }
+            Points[way_index][element_index+1].push(heightNewMarker,timeNewMarker);
+        }else{
+            Points[way_index][element_index+1].push(heightNewMarker);
+        };
+
+        Markers[way_index].splice(element_index+1,0,marker_t);
+        marker_t.addTo(myMap);
+        marker_t.on('click', markerClick);
+
+        reloadPath(way_index);
+        currentShownTrackIndex = way_index;
+        focusOnTrack(way_index,true);
+    });
+}
+
+
+function redactMarkerOperation(clicked_marker, way_index, element_index){
+    disableMap();
+    document.getElementById('input1').value = Points[way_index][element_index][2];
+    
+    const output = document.getElementById('valueDisplay');
+    var input2 = 0;
+    if (PointsVariant[way_index] == 1){
+
+        input2 = document.getElementById('input2');
+
+        if (element_index === 0){
+            input2.min = Points[way_index][element_index][3]-500;
+        }else {
+            input2.min = Points[way_index][element_index-1][3]+1;
+        }
+
+        if (element_index === Points[way_index].length-1){
+            input2.max = Points[way_index][element_index][3]+500;
+        }else {
+            input2.max = Points[way_index][element_index+1][3]-1;
+        }
+
+        input2.value = Points[way_index][element_index][3]; 
+    }else{
+        document.getElementById('timeRedact').style.display = "none";
+    }
+
+    modal.style.display = 'block';
+
+    closeModalSpan.addEventListener('click', () => {
+        modal.style.display = 'none';
+        enableMap();
+    }, { once: true });
+
+    modal.addEventListener('click', (event) => {
+        event.stopPropagation(); 
+    });
+    
+
+    saveBtn.addEventListener('click', () => {
+        const input1 = document.getElementById('input1').value;
+        const input2 = document.getElementById('input2').value;
+        Points[way_index][element_index][2] = input1;
+
+        if (PointsVariant[way_index] == 1){
+            Points[way_index][element_index][3] = input2;
+        }
+        currentShownTrackIndex = way_index;
+        focusOnTrack(way_index,true);
+        modal.style.display = 'none';
+
+        enableMap();
+    }, { once: true });
+
+    output.innerHTML = input2.value;
+    input2.oninput = function() {
+        output.innerHTML = this.value;
+    }
+
+    currentShownTrackIndex = way_index;
+    focusOnTrack(way_index,true);
+}
+
+function deleteMarkerOperation(clicked_marker, way_index, element_index){
+    myMap.removeLayer(clicked_marker);
+    Points[way_index].splice(element_index,1);
+    Markers[way_index].splice(element_index,1);
+
+    way_line = Markers[way_index].pop();
+    myMap.removeLayer(way_line);
+    focusOnTrack(way_index,true);
+    reloadPath(way_index);
 }
 
 
@@ -620,183 +701,25 @@ function markerClick(e){
     for(var i = 0;i < Markers.length; i++){
             
         if (Markers[i].includes(clicked_marker)){
-            
             way_index = i;
-            //console.log(way_index);
-            // console.log(clicked_marker);
-            // console.log("Way Index:"+ way_index);
-            // console.log("Element Index:"+ element_index);
-            // console.log(Markers);
-
             element_index = Markers[way_index].findIndex((marker)=>marker ===clicked_marker );
-            // console.log("Element Index:"+ element_index);
-            //console.log(element_index);
         }
     }
 
-    if (delete_allowance){
-        myMap.removeLayer(clicked_marker);
-        Points[way_index].splice(element_index,1);
-        Markers[way_index].splice(element_index,1);
-
-        way_line = Markers[way_index].pop();
-        myMap.removeLayer(way_line);
-        reloadPath(way_index);
+    if (selectedOperation === 2){
+        deleteMarkerOperation(clicked_marker, way_index, element_index);
     }
-    else if (move_allowance){
-        //console.log(move_allowance);
-        currentShownTrackIndex = way_index;
-        focusOnTrack(way_index,true);
-        clicked_marker.dragging.enable();
-        clicked_marker.on("moveend",function(e){
-            //console.log("DragEnd")
-            way_line = Markers[way_index].pop();
-            myMap.removeLayer(way_line);
-            e.target.dragging.disable();
-
-            var temp = e.target;
-            //console.log(temp);
-            //console.log(temp._latlng);
-            //console.log("Way Index:"+ way_index);
-            //console.log("Element Index:"+ element_index);
-            //console.log(Points[way_index][element_index]);
-            if (PointsVariant[way_index] == 1){
-                Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat'],Points[way_index][element_index][2], Points[way_index][element_index][3]]);
-            }else{
-
-                Points[way_index].splice(element_index,1,[temp._latlng['lng'], temp._latlng['lat'],Points[way_index][element_index][2]]);
-            };
-            //console.log(Points)
-            Markers[way_index].splice(element_index,1,temp);
-
-            reloadPath(way_index);
-            currentShownTrackIndex = way_index;
-            focusOnTrack(way_index,true);
-        });
+    else if (selectedOperation === 0){
+        moveMarkerOperation(clicked_marker, way_index, element_index);
     }
-    else if (create_allowance){
-        myMap.once('click', function(e){
-            way_line = Markers[way_index].pop();
-            myMap.removeLayer(way_line);
-            var temp = [e.latlng['lng'],e.latlng['lat']]
-            //Points[way_index].push(temp);
-            Points[way_index].splice(element_index+1,0,temp);
-            //console.log(temp);
-            var marker_t = showWayPoint(temp);
-            var heightNewMarker = 0
-            try {
-                heightNewMarker = (Points[way_index][element_index+2][2] + Points[way_index][element_index][2]) / 2;
-            }catch{
-                heightNewMarker = Points[way_index][element_index][2];
-            }
-            //console.log(heightNewMarker);
-            // var timeNewMarker = Math.round((Points[way_index][element_index+2][3] + Points[way_index][element_index][3]) / 2);
-            // console.log(timeNewMarker);
-
-            if (PointsVariant[way_index] == 1){
-                var timeNewMarker = 0;
-                try{
-                    timeNewMarker = Math.round((Points[way_index][element_index+2][3] + Points[way_index][element_index][3]) / 2);
-                }catch{
-                    timeNewMarker = Points[way_index][element_index][3];
-                }
-                Points[way_index][element_index+1].push(heightNewMarker,timeNewMarker);
-            }else{
-                Points[way_index][element_index+1].push(heightNewMarker);
-            };
-            //console.log(way_index);
-            //Markers[way_index].push(marker_t);
-            Markers[way_index].splice(element_index+1,0,marker_t);
-            marker_t.addTo(myMap);
-            marker_t.on('click', markerClick);
-
-            reloadPath(way_index);
-            currentShownTrackIndex = way_index;
-            focusOnTrack(way_index,true);
-            //myMap.off('click');
-        });
+    else if (selectedOperation === 1){
+        createMarkerOperation(clicked_marker, way_index, element_index);
     }
-    else if (redact_allowance){
-
-        disableMap();
-        document.getElementById('input1').value = Points[way_index][element_index][2];
-        
-        //document.getElementById('input2').value = 'Default Value 2';
-        //Points[way_index][element_index];
-        
-        const output = document.getElementById('valueDisplay');
-        var input2 = 0;
-        if (PointsVariant[way_index] == 1){
-
-            input2 = document.getElementById('input2');
-
-            if (element_index === 0){
-                input2.min = Points[way_index][element_index][3]-500; // Set minimum value
-            }else {
-                input2.min = Points[way_index][element_index-1][3]+1;
-            }
-
-
-            if (element_index === Points[way_index].length-1){
-                input2.max = Points[way_index][element_index][3]+500;
-            }else {
-                input2.max = Points[way_index][element_index+1][3]-1;
-            }
-
-
-            //input2.max = Points[way_index][element_index+1][3]-1; // Set maximum value
-            input2.value = Points[way_index][element_index][3]; // Set default value
-        }else{
-            document.getElementById('timeRedact').style.display = "none";
-        }
-
-        modal.style.display = 'block';
-
-        closeModalSpan.addEventListener('click', () => {
-            modal.style.display = 'none';
-            enableMap();
-        }, { once: true });
-
-        modal.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent the click event from propagating to the window
-        });
-        
-
-        saveBtn.addEventListener('click', () => {
-            const input1 = document.getElementById('input1').value;
-            const input2 = document.getElementById('input2').value;
-
-            Points[way_index][element_index][2] = input1;
-
-            if (PointsVariant[way_index] == 1){
-                Points[way_index][element_index][3] = input2;
-            }
-
-            // console.log('Input 1:', input1);
-            // console.log('Input 2:', input2);
-            currentShownTrackIndex = way_index;
-            focusOnTrack(way_index,true);
-            modal.style.display = 'none';
-
-            enableMap();
-        }, { once: true });
-
-        output.innerHTML = input2.value;
-
-        input2.oninput = function() {
-            output.innerHTML = this.value;
-        }
-
-        currentShownTrackIndex = way_index;
-        focusOnTrack(way_index,true);
+    else if (selectedOperation === 3){
+        redactMarkerOperation(clicked_marker, way_index, element_index)   
     }
 
-    
-    delete_allowance = false;
-    move_allowance = false;
-    create_allowance = false;
-    redact_allowance = false;
-    //console.log(Points);
+    selectedOperation = -1;
 }
 
 
@@ -818,6 +741,39 @@ function displayPoints()
     }
 
     pointsLength = Points.length;
+}
+
+
+function changeButtonsAvailability(ifEnable){
+    if (ifEnable){
+        moveMarkerElement.disabled = false;
+        moveMarkerElement.classList.remove('faded');
+
+        deleteMarkerElement.disabled = false;
+        createMarkerElement.disabled = false;
+        currentLocationElement.disabled = false;
+        changeMiscInfoElement.disabled = false;
+
+        deleteMarkerElement.classList.remove('faded');
+        createMarkerElement.classList.remove('faded');
+        currentLocationElement.classList.remove('faded');
+        changeMiscInfoElement.classList.remove('faded');
+
+    }else{
+        moveMarkerElement.disabled = true;
+        moveMarkerElement.classList.add('faded');
+
+        deleteMarkerElement.disabled = true;
+        createMarkerElement.disabled = true;
+        currentLocationElement.disabled = true;
+        changeMiscInfoElement.disabled = true;
+
+        deleteMarkerElement.classList.add('faded');
+        createMarkerElement.classList.add('faded');
+        currentLocationElement.classList.add('faded');
+        changeMiscInfoElement.classList.add('faded');
+
+    }
 }
 
 
@@ -862,6 +818,17 @@ function addInfoListItem(addIndex){
         clearFile(addIndex);
         const listItemToDelete = this.closest("li");
         listItemToDelete.remove();
+
+        var ulElement = document.getElementById('infoList');
+        var liElements = ulElement.getElementsByTagName('li');
+        var numberOfItems = liElements.length;
+        if (numberOfItems <= 0){
+            changeToHeightToLength.disabled = true;
+            changeToHeightToLength.classList.add('faded');
+            changeToHeightToTime.disabled = true;
+            changeToHeightToTime.classList.add('faded');
+            changeButtonsAvailability(false);
+        }
     });
 
     divPointItemButtons.appendChild(buttonSave);
@@ -873,17 +840,41 @@ function addInfoListItem(addIndex){
 
     liHandle = document.getElementById("infoList");
     liHandle.appendChild(infoListItem);
-
+    setElevationProfileStyle();
 }
 
 
 function focusOnTrack(trackIndex, trackType){
-    //console.log("Focus!");
     geojson_points1 = pointsToGeoJSON(Points[trackIndex], trackType);
-        //geojson_points1 = pointsToGeoJSONDeprecated(Points);
     hg.addData(geojson_points1);
     let steepness = document.getElementById("selectionText");
     steepness.textContent = "";
+
+
+    if (PointsVariant[trackIndex] === 0){
+        changeToHeightToLength.disabled = false;
+        changeToHeightToLength.classList.remove('faded');
+        changeToHeightToTime.disabled = true;
+        changeToHeightToTime.classList.add('faded');
+    }
+    else {
+        changeToHeightToLength.disabled = false;
+        changeToHeightToLength.classList.remove('faded');
+        changeToHeightToTime.disabled = false;
+        changeToHeightToTime.classList.remove('faded');
+    }
+
+    if (!trackType){
+        const textElements = document.querySelectorAll('text');
+
+        const textElementsWithFillAndKm = Array.from(textElements).filter(element => 
+        element.hasAttribute('fill') && element.textContent.includes('km')
+        );
+
+        textElementsWithFillAndKm.forEach(element => {
+            element.textContent = element.textContent.replace('km', 'min');
+        });
+    }
 }
 
 
@@ -902,45 +893,87 @@ function getFileType(fileName) {
 
 
 
+
+
 function save(i)
 {
-    
-    
-    //for(var i = 0; i < Points.length;i++){
-        let content = "";
-      //  console.log(xmlDoc_list[i]);
-        for(point of Points[i])
-        {
-            content += `\n<trkpt lat="${point[1]}" lon="${point[0]}">
-            <ele>"${point[2]}</ele>
-            </trkpt>`;
+    var savingFile = fileList[i];
+    var extension = savingFile.name.split('.').pop().toLowerCase();
+    console.log(extension);
+    let content = "";
+    if (extension === "gpx"){
+        if (PointsVariant[i] === 0){
+            for(point of Points[i])
+            {
+                content += `\n<trkpt lat="${point[1]}" lon="${point[0]}">
+                <ele>${point[2]}</ele>
+                </trkpt>`;
+            }
+        } else if(PointsVariant[i] === 1) {
+            for(point of Points[i])
+                {
+                    var timeStamp = new Date(point[3]*1000).toISOString();
+                    var formatedTimeStamp = timeStamp.split('.')[0] + 'Z';
+                    content += `\n<trkpt lat="${point[1]}" lon="${point[0]}">
+                    <ele>${point[2]}</ele>
+                    <time>${formatedTimeStamp}</time>
+                    </trkpt>`;
+                }
         }
-        xmlDoc_list[i].getElementsByTagName("trkseg")[0].innerHTML = content;//writes several files in the same file, xmlDoc must be array
-        download(i);
+        xmlDoc_list[i].getElementsByTagName("trkseg")[0].innerHTML = content;
+    }else if(extension === "kml"){
+        console.log(Points);
+        console.log(xmlDoc_list[i].getElementsByTagName('LineString')[0]);
+        if (PointsVariant[i] === 0){
+            for(point of Points[i]){
+                content += `${point[0]},${point[1]},${point[2]} `
+            }
+        } else if(PointsVariant[i] === 1) {
+            var j = 0;
+            
+            for(point of Points[i]){
+                var timeStamp = new Date(point[3]*1000).toISOString();
+                var formatedTimeStamp = timeStamp.split('.')[0] + 'Z';
+                content += `${point[0]},${point[1]},${point[2]}\n`;
+                xmlDoc_list[i].getElementsByTagName('when')[j].innerHTML = formatedTimeStamp;
+                j++;
+            }
+            content = `\n<tessellate>1</tessellate>\n<coordinates>\n${content}</coordinates>\n`;
+        }
+        xmlDoc_list[i].getElementsByTagName('LineString')[0].innerHTML = content;
+    }
     
-    //}
+    download(i,extension);
 }
 
-function download(index) 
+function download(index,extension) 
 {
+    var savingFile = fileList[index];
+    var fileName = savingFile.name.split('.')[0];
+    console.log(fileName);
     console.log(xmlDoc_list[index]);
     let serializer = new XMLSerializer();
     let stringXML = serializer.serializeToString(xmlDoc_list[index]);
-    let filename = "Updated_file";
-
-    var blob = new Blob([stringXML], { type: 'gpx-file' });
-    var a = document.createElement('a');
-    a.href = window.URL.createObjectURL(blob);
-    a.download = 'processed_data.gpx';
-    a.click();
-
-    
+    if (extension === "gpx"){
+        var blob = new Blob([stringXML], { type: 'gpx-file' });
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = `${fileName}_updated.gpx`;
+        a.click();
+    }
+    else  if (extension === "kml"){
+        var blob = new Blob([stringXML], { type: 'kml-file' });
+        var a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = `${fileName}_updated.kml`;
+        a.click();
+    };
 };
 
 
 
 
-function setElevationProfileWidth() {
+function setElevationProfileStyle() {
 
     const width451 = window.matchMedia('(min-width: 451px)');
     const width450 = window.matchMedia('(max-width: 450px)');
@@ -957,6 +990,7 @@ function setElevationProfileWidth() {
     }else{
         graph.style.gridColumn = '2 / span 2';
         graph.style.gridRow = '1 / span 1';
+        hg.resize({ width: hg._width, height: 167 });
     }
 
     if (graph) graph.style.display = 'none';
@@ -1036,7 +1070,7 @@ let controlDiv = document.querySelector('.leaflet-bottom');
 controlDiv.addEventListener("mouseover", disableMap());
 controlDiv.addEventListener("mouseout", enableMap());
 
-setTimeout(setElevationProfileWidth,250);
+setTimeout(setElevationProfileStyle,250);
         
 
 
@@ -1153,6 +1187,8 @@ function findTimeMarker(trackIndex){
     }
 
     var defaultDate = uniqueDaysArray[0];
+    var dateSelect = document.getElementById('datepicker');
+    var timeSelect = document.getElementById('timeSelect');
 
     $("#datepicker").datepicker({
         beforeShowDay: available,
@@ -1160,20 +1196,12 @@ function findTimeMarker(trackIndex){
         defaultDate: defaultDate,
         onSelect: function(dateText) {
             selectedDate = dateText; // Save selected date to variable
+            addOptions(timeSelect, dateTimes[selectedDate] || []);
             //console.log("Selected date: " + selectedDate);
             // You can do whatever you want with the selected date here
         }
     });
 
-
-    var dateSelect = document.getElementById('datepicker');
-    var timeSelect = document.getElementById('timeSelect');
-    dateSelect.addEventListener('mouseout', function() {
-        //var selectedDate = dateSelect.value;
-        console.log(dateTimes);
-        console.log(dateTimes[selectedDate]);
-        addOptions(timeSelect, dateTimes[selectedDate] || []);
-    });
 
     // Инициализация времени для первой даты по умолчанию
     //addOptions(timeSelect, dateTimes[dateSelect.value]);
@@ -1232,71 +1260,4 @@ function findTimeMarker(trackIndex){
 
         enableMap();
     }, { once: true });
-
-    //console.log(uniqueDaysArray);
-    
-    /*const output = document.getElementById('valueDisplay');
-
-    var input2 = 0;
-    if (PointsVariant[way_index] == 1){
-
-        input2 = document.getElementById('input2');
-
-        if (element_index === 0){
-            input2.min = Points[way_index][element_index][3]-500; // Set minimum value
-        }else {
-            input2.min = Points[way_index][element_index-1][3]+1;
-        }
-
-
-        if (element_index === Points[way_index].length-1){
-            input2.max = Points[way_index][element_index][3]+500;
-        }else {
-            input2.max = Points[way_index][element_index+1][3]-1;
-        }
-
-
-        //input2.max = Points[way_index][element_index+1][3]-1; // Set maximum value
-        input2.value = Points[way_index][element_index][3]; // Set default value
-    }}
-
-    modal.style.display = 'block';
-
-    closeModalSpan.addEventListener('click', () => {
-        modal.style.display = 'none';
-        enableMap();
-    }, { once: true });
-
-    modal.addEventListener('click', (event) => {
-        event.stopPropagation(); // Prevent the click event from propagating to the window
-    });
-    
-
-    saveBtn.addEventListener('click', () => {
-        const input1 = document.getElementById('input1').value;
-        const input2 = document.getElementById('input2').value;
-
-        Points[way_index][element_index][2] = input1;
-
-        if (PointsVariant[way_index] == 1){
-            Points[way_index][element_index][3] = input2;
-        }
-
-        // console.log('Input 1:', input1);
-        // console.log('Input 2:', input2);
-        currentShownTrackIndex = way_index;
-        focusOnTrack(way_index,true);
-        modal.style.display = 'none';
-
-        enableMap();
-    }, { once: true });
-
-    output.innerHTML = input2.value;
-
-    input2.oninput = function() {
-        output.innerHTML = this.value;
-    }
-
-    currentShownTrackIndex = way_index;
-    focusOnTrack(way_index,true);
-*/}
+}
