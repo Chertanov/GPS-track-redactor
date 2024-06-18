@@ -13,7 +13,7 @@ var xmlDoc_list = [];
 var currentPosition = [];
 var debug_info_handle = document.getElementById("debug_info");
 
-
+let controlDiv = document.querySelector('.leaflet-bottom');
 
 const modal = document.getElementById('myModal');
 const closeModalSpan = document.querySelector('.close');
@@ -129,7 +129,6 @@ let hg = L.control.heightgraph({expandControls: false,height:180, width:800,
     type: "Type",
     legend: " "
     },
-    
 });
 
 hg.addTo(myMap);
@@ -311,6 +310,7 @@ function processFileQueue() {
     }else{
         changeButtonsAvailability(true);
         displayPoints();
+        setElevationProfileStyle();
     }
 }
 
@@ -984,6 +984,14 @@ function setElevationProfileStyle() {
     //if (!this.elevation_input.checked) return;
 
     if (width450.matches) {
+        var ulElement = document.getElementById('infoList');
+        var liElements = ulElement.getElementsByTagName('li');
+        var numberOfItems = liElements.length;
+        if (numberOfItems <= 0){
+            controlDiv.style.display = "none";
+        }else{
+            controlDiv.style.display = "block";
+        }
         graph.style.gridColumn = '1 / span 2';
         graph.style.gridRow = '1 / span 1';
         hg.resize({ width: hg._width, height: 120 });
@@ -1026,7 +1034,7 @@ function setElevationProfileStyle() {
 
 
     if (graphCell != hg._width || elevation_profile_height != hg._height) {
-       
+       console.log(graphCell, elevation_profile_height);
         if(graphCell > 100){
         hg.resize({ width: graphCell, height: elevation_profile_height });}
     }
@@ -1065,7 +1073,7 @@ function enableMap() {
 };
 
 
-let controlDiv = document.querySelector('.leaflet-bottom');
+
 
 controlDiv.addEventListener("mouseover", disableMap());
 controlDiv.addEventListener("mouseout", enableMap());
