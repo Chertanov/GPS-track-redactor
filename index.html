@@ -28,14 +28,11 @@
     <link rel="icon" type="image/x-icon" href="./src/images/favicon.png">
     <title>GPS-Track Redactor</title>
     
-
 </head>
-<body onresize="setElevationProfileStyle()">
-    
+<body >
     
     <div id="map">
 
-       
         <div id="myModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
@@ -55,7 +52,6 @@
             </div>
         </div>
 
-
         <div id="timeModal" class="time-modal">
             <div class="time-modal-content">
                 <span class="time-close">&times;</span>
@@ -73,9 +69,6 @@
             </div>
         </div>
     
-
-
-        
         <div class="leaflet-bottom leaflet-left" onmouseover="disableMap()" onmouseout="enableMap()">
             <div id="track-info" class="leaflet-control">
                 <div id="information-grid" class="panels-container trace-info maximized" style>
@@ -92,27 +85,6 @@
                 </div>
             </div>
         </div>
-
-
-    </div>
-
-
-    
-
-
-
-
-    
-    <div >
-        <button onclick="clearMap()">Delete</button>
-    </div>
-    <div>
-        <select name="file_names" id="files">
-
-        </select>
-        <button onclick="clearFile()">Remove file</button>
-        <button onclick="save()">Save files</button>
-        <p id = "debug_info">Temporal placefolder</p>
     </div>
 
     <link rel="stylesheet" href="./src/css/style.css">
@@ -120,9 +92,6 @@
     <script src="./src/js/fileHandling.js"></script>
     <script src="./src/js/buttonsFunctionality.js"></script>
     <script src="./src/js/infoTab.js"></script>
-
-
-    
     
 </body>
 </html>
