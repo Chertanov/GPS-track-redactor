@@ -261,29 +261,6 @@ function save(i)
     download(i,extension);
 }
 
-// function download(index,extension) 
-// {
-//     var savingFile = fileList[index];
-//     var fileName = savingFile.name.split('.')[0];
-
-//     let serializer = new XMLSerializer();
-//     let stringXML = serializer.serializeToString(xmlDoc_list[index]);
-//     if (extension === "gpx"){
-//         var blob = new Blob([stringXML], { type: 'gpx-file' });
-//         var a = document.createElement('a');
-//         a.href = window.URL.createObjectURL(blob);
-//         a.download = `${fileName}_updated.gpx`;
-//         a.click();
-//     }
-//     else  if (extension === "kml"){
-//         var blob = new Blob([stringXML], { type: 'kml-file' });
-//         var a = document.createElement('a');
-//         a.href = window.URL.createObjectURL(blob);
-//         a.download = `${fileName}_updated.kml`;
-//         a.click();
-//     };
-// };
-
 
 function download(index, extension) {
     var savingFile = fileList[index];
