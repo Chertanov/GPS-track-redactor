@@ -55,15 +55,13 @@ let myMap = L.map("map", {
     maxBoundsViscosity: 1.0,
 }).setView([47.563, 24.1130], 3);
 
-let baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+let baseLayer = L.tileLayer.fallback('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
         attribution: 'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         maxZoom: 25,
         id: 'streets-v11',
         tileSize: 512,
         zoomOffset: -1,
-        useCache: true,
-        crossOrigin: true,
-        updateWhenIdle:true,
+
         accessToken: 'pk.eyJ1IjoiY2hlcnRhbm92IiwiYSI6ImNscTVpOXE0ajBmaXYyam51ZTBwOW5hajgifQ.jnOJHSk2-HzMMg60vgCr1w'
     }).addTo(myMap);
 
