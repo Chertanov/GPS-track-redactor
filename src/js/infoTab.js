@@ -255,6 +255,12 @@ function focusOnTrack(trackIndex, trackType){
     if (!trackType){
         const textElements = document.querySelectorAll('text');
 
+        const hiddentTextElements = document.querySelectorAll('tspan');
+    
+        hiddentTextElements.forEach(element => {
+            element.textContent = element.textContent.replace('km', 'min');
+        });
+
         const textElementsWithFillAndKm = Array.from(textElements).filter(element => 
         element.hasAttribute('fill') && element.textContent.includes('km')
         );

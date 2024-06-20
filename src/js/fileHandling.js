@@ -30,7 +30,13 @@ function displayPoints()
             marker = showWayPoint(Points[j][i]);
             Markers[j].push(marker);
             marker.addTo(myMap);
-            marker.bindPopup(`Lat:${Points[j][i][1]}\nLon:${Points[j][i][0]}\nEle:${Points[j][i][2]}\nTime:${Points[j][i][3]}`);
+            if (PointsVariant[j] === 1){
+                var timeStamp = new Date(Points[j][i][3]*1000).toISOString();
+                var formatedTimeStamp = timeStamp.split('.')[0] + 'Z';
+                marker.bindPopup(`Lat:${Math.round(Points[j][i][1]*1000000)/1000000}\nLon:${Math.round(Points[j][i][0]*1000000)/1000000}\nEle:${Math.round(Points[j][i][2]*1000000)/1000000}\nTime:${formatedTimeStamp}`);}
+            else if (PointsVariant[j] === 0){
+                marker.bindPopup(`Lat:${Math.round(Points[j][i][1]*1000000)/1000000}\nLon:${Math.round(Points[j][i][0]*1000000)/1000000}\nEle:${Math.round(Points[j][i][2]*1000000)/1000000}`);}
+            
             marker.on('click', markerClick); 
             
         }

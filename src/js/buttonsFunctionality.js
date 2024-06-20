@@ -136,8 +136,8 @@ function redactMarkerOperation(clicked_marker, way_index, element_index){
     
 
     saveBtn.addEventListener('click', () => {
-        const input1 = document.getElementById('input1').value;
-        const input2 = document.getElementById('input2').value;
+        const input1 = Number(document.getElementById('input1').value);
+        const input2 = Number(document.getElementById('input2').value);
         Points[way_index][element_index][2] = input1;
 
         if (PointsVariant[way_index] == 1){
