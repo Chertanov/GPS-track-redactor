@@ -36,16 +36,23 @@ document.querySelector('.scrollable-list').addEventListener('wheel', function(ev
     }
 });
 
+var southWest = L.latLng(-90, -180);
+var northEast = L.latLng(90, 180);
+var bounds = L.latLngBounds(southWest, northEast);
 
 let myMap = L.map("map", {
     center: [51.505, -0.09],
+    minZoom:2,
+    maxZoom:20,
     zoom: 20,
     preferCanvas: false,
     zoomControl: false,
     attributionControl:false,
     boxZoom:false,
     inertia:true,
-    doubleClickZoom:false
+    doubleClickZoom:false,
+    maxBounds:bounds,
+    maxBoundsViscosity: 1.0,
 }).setView([47.563, 24.1130], 3);
 
 let baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -54,9 +61,15 @@ let baseLayer = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/
         id: 'streets-v11',
         tileSize: 512,
         zoomOffset: -1,
+        useCache: true,
+        crossOrigin: true,
+        updateWhenIdle:true,
         accessToken: 'pk.eyJ1IjoiY2hlcnRhbm92IiwiYSI6ImNscTVpOXE0ajBmaXYyam51ZTBwOW5hajgifQ.jnOJHSk2-HzMMg60vgCr1w'
     }).addTo(myMap);
+
 baseLayer.myId = "Base";
+
+
 
 L.control.attribution({
     position: "topleft"

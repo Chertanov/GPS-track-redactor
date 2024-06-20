@@ -165,11 +165,27 @@ function addInfoListItem(addIndex){
     buttonChoice.textContent = fileInfoHandle.name;
     buttonChoice.addEventListener("click", function(event) {
         currentShownTrackIndex = addIndex;
+
+        const pathElements = document.querySelectorAll('path.leaflet-interactive');
+
+        pathElements.forEach(path => {
+            path.style.display = "none";
+        });
+
+        myMap.on("moveend", () => {
+            pathElements.forEach(path => {
+                path.style.display = "block";
+        });})
+
         myMap.flyTo([Points[addIndex][0][1], Points[addIndex][0][0]],10);
+
+
         focusOnTrack(addIndex, true);
         for (var i = 0; i < Markers[currentShownTrackIndex].length - 1; i++) {
             Markers[currentShownTrackIndex][i].setOpacity(1);
         }
+
+
     });
 
     let divPointItemButtons = document.createElement("div");

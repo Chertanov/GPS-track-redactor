@@ -347,6 +347,8 @@ function findTimeMarker(trackIndex){
 
         var time = new Date(selectedTotalTime).getTime() / 1000;
 
+       
+
 
         var timeIndex = fourthElements.findIndex((timestamp_item)=> timestamp_item === time);
 
@@ -354,10 +356,21 @@ function findTimeMarker(trackIndex){
         for (var i = 0; i < Markers[trackIndex].length - 1; i++) {
             Markers[trackIndex][i].setOpacity(0);
         }
-
+        
         
 
         Markers[trackIndex][timeIndex].setOpacity(1);
+
+        const pathElements = document.querySelectorAll('path.leaflet-interactive');
+
+        pathElements.forEach(path => {
+            path.style.display = "none";
+        });
+
+        myMap.on("moveend", () => {
+            pathElements.forEach(path => {
+                path.style.display = "block";
+        });})
 
         myMap.flyTo([Points[trackIndex][timeIndex][1], Points[trackIndex][timeIndex][0]],17);
         

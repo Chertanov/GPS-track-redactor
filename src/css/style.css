@@ -339,3 +339,10 @@ a {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.leaflet-popup-content{
+  margin:5px;
+  max-width: 90px;
+  font-size:x-small;
+}
+ 

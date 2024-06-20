@@ -30,6 +30,7 @@ function displayPoints()
             marker = showWayPoint(Points[j][i]);
             Markers[j].push(marker);
             marker.addTo(myMap);
+            marker.bindPopup(`Lat:${Points[j][i][1]}\nLon:${Points[j][i][0]}\nEle:${Points[j][i][2]}\nTime:${Points[j][i][3]}`);
             marker.on('click', markerClick); 
             
         }
@@ -75,7 +76,7 @@ function readGPXFile(xmlDoc){
 
         if (trackVariant) {
             var time = new Date(trkpt.querySelector('time').textContent).getTime() / 1000;
-            pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(time)]);
+            pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(Math.round(time))]);
         }
         else {
             pointsFromFile.push([Number(lon),Number(lat),Number(ele)]);
@@ -119,7 +120,7 @@ function readKMLFile(xmlDoc){
                 var ele = parseFloat(parts[2]);
                 if (trackVariant) {
                     var time = new Date(timeCoordinates[i].textContent).getTime() / 1000;
-                    pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(time)]);
+                    pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(Math.round(time))]);
                 }else{
                     pointsFromFile.push([Number(lon),Number(lat),Number(ele)]);
                 }
@@ -139,7 +140,7 @@ function readKMLFile(xmlDoc){
                 var ele = parseFloat(parts[2]);
                 if (trackVariant) {
                     var time = new Date(timeCoordinates[j].textContent).getTime() / 1000;
-                    pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(time)]);
+                    pointsFromFile.push([Number(lon),Number(lat),Number(ele), Number(Math.round(time))]);
                 }else{
                     pointsFromFile.push([Number(lon),Number(lat),Number(ele)]);
                 }
@@ -222,7 +223,7 @@ function save(i)
         xmlDoc_list[i].getElementsByTagName("trkseg")[0].innerHTML = content;
     }else if(extension === "kml"){
         if (KMLPointsVariant[i] === 0){
-            console.log(Points);
+            
             if (PointsVariant[i] === 0){
                 for(point of Points[i]){
                     content += `${point[0]},${point[1]},${point[2]} `
